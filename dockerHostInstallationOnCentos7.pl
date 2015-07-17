@@ -3,8 +3,8 @@
 ##	Author 		: Miztiik
 ##	Date   		: 17Jul2015
 ##	Version		: 0.1
-##	Description	: This script is to used to create a dockerHost running centos6.6 from minimal DVD
-##	Assumptions	: BaseOS Image - Centos 6.6(max supported by Cloudera 5.x)
+##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
+##	Assumptions	: BaseOS Image - Centos 7
 ##################################################################################
 
 #Check network configs
@@ -15,13 +15,11 @@ nameserver 8.8.8.8
 nameserver 8.8.4.4
 EOF
 	
-# more /etc/sysconfig/network
-# NETWORKING=yes
-# HOSTNAME=dockerhost.example.com
+more /etc/sysconfig/network
 
 cat > /etc/sysconfig/network << EOF
 NETWORKING=yes
-HOSTNAME=dockerhost.example.com
+HOSTNAME=dockerHostCentos7.example.com
 DNS1=8.8.8.8
 DNS2=8.8.4.4
 EOF
@@ -50,7 +48,7 @@ EOF
 
 #Lets create a static network on eth1 on the host
 cat > /etc/sysconfig/network-scripts/ifcfg-eth1 << EOF
-HOSTNANE=dockerhost
+HOSTNANE=dockerHostCentos7
 DEVICE=eth1
 ONBOOT=yes
 BOOTPROTO=none
@@ -58,7 +56,7 @@ TYPE=Ethernet
 NM_CONTROLLED=no
 IPV6INIT=no
 USERCTL=no
-IPADDR=192.168.56.75
+IPADDR=192.168.56.85
 NETWORK=192.168.0.0
 NETMASK=255.255.255.0
 DNS1=192.168.0.1
@@ -68,7 +66,7 @@ EOF
 
 
 # Restart the network for the new n/w configs to take into effect
-service network restart
+systemctl restart network
 
 # Installing and Configuring the Software
 # Check and install if you have EPEL Packages.
@@ -78,11 +76,11 @@ yum -y install epel-release
 # Edit /etc/yum.conf so that docs are not installed to keep the image size small
 echo "tsflags=nodocs" >> /etc/yum.conf
 
-# Install yum presto (for Centos 6)
-yum -y install yum-presto
+# For Centos 7
+yum -y install deltarpm
 
 # Setting up the binaries for Virtualbox Guest additions
-yum -y install gcc kernel-devel perl
+yum -y install gcc kernel-headers-$(uname -r) kernel-devel-$(uname -r) perl bzip2 dkms
 
 # Mount the ISO image with the guest additions
 mkdir /cdrom
@@ -98,8 +96,6 @@ reboot
 rpm -qa kernel
 rpm -e <old-kernel-versions>
 
-
-
 ##################################################################################
 ## Here ends the configs on the operating system level
 ##################################################################################
@@ -109,24 +105,15 @@ rpm -e <old-kernel-versions>
 ## Docker Installation & Configuration BEGINS
 ##################################################################################
 
-# Setting up the docker images/container mount point on a remote mounted directory ( in my case VirtualBox Shared Folder - not sure it will work, but would like to test it)
-mkdir /var/lib/docker
-mkdir /var/dockerRepos
-
-mount -t vboxsf dockerImages /var/lib/docker
-mount -t vboxsf dockerRepos /var/dockerRepos
-
-# Need to add steps to automount the share in the same mount point
-
 # Now we are ready to install docker - http://wiki.centos.org/Cloud/Docker
-# For Centos 6
-yum -y install docker-io
+# For Centos 7
+yum -y install docker
 
 # Once docker is installed, you will need to start the service in order to use it.
-service docker start
+systemctl start docker
 
 # To start the docker service on boot:
-chkconfig docker on
+systemctl enable docker
 
 # Adding your user to docker group to run docker (lets setup one more username "hadoopadmin")
 useradd hadoopadmin
@@ -138,19 +125,20 @@ usermod -aG docker hadoopadmin
 # On Centos/Fedora/RedHat that option is to be set in /etc/sysconfig/docker
 # On Ubuntu that option is to be set in the /etc/default/docker
 # Stop docker service docker stop
-service docker stop
+systemctl stop docker
 # Verify no docker process is running 
 ps faux
 
 # Add this line to the defautls
 # Add the google dns servers and the mount point for docker images and container data
-other_args="--dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImages --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G"
+OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImagesCentos7 --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G'
+
 
 # Location used for temporary files, such as those created by docker load and build operations
-DOCKER_TMPDIR=/media/sf_dockerRepos/dockerImages
+DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
 
 # Restart docker
-service docker start
+systemctl start docker
 
 ##################################################################################
 ## Docker Installation & Configuration ENDS

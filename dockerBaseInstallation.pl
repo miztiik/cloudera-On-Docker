@@ -84,3 +84,4 @@ useradd hadoopadmin
 echo <password> | passwd hadoopadmin --stdin
 usermod -aG docker hadoopadmin
 
+docker pull centos:6.6
