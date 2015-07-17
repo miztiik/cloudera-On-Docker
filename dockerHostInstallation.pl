@@ -26,13 +26,6 @@ DNS1=8.8.8.8
 DNS2=8.8.4.4
 EOF
 
-# If Centos7 to make the interfaces have pretty names - editing /etc/default/grub and adding "net.ifnames=0" to GRUB_CMDLINE_LINUX variable.
-# net.ifnames=0 biosdevname=0
-# grub2-mkconfig -o /boot/grub2/grub.cfg
-# cd /etc/sysconfig/network-scripts
-# mv ifcfg-enp0s3 ifcfg-eth0
-# mv ifcfg-enp0s8 ifcfg-eth1
-
 # To remove the old device MAC Address (OPTIONAL)
 rm -r /etc/udev/rules.d/70-persistent-net.rules
 
@@ -142,12 +135,12 @@ service docker stop
 # Verify no docker process is running 
 ps faux
 
-# Add this line to the defautls
+# Add this line to the defaults
 # Add the google dns servers and the mount point for docker images and container data
 other_args="--dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImages --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G"
 
 # Location used for temporary files, such as those created by docker load and build operations
-DOCKER_TMPDIR=/media/sf_dockerRepos/dockerImages
+DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
 
 # Restart docker
 service docker start
