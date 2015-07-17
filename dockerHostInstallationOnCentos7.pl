@@ -131,11 +131,14 @@ ps faux
 
 # Add this line to the defautls
 # Add the google dns servers and the mount point for docker images and container data
-OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImagesCentos7 --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G'
-
+OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/imageRepoOnCentos7'
 
 # Location used for temporary files, such as those created by docker load and build operations
 DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+
+# Storage options are set in /etc/sysconfig/docker-storage
+DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
+
 
 # Restart docker
 systemctl start docker
