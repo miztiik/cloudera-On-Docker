@@ -13,8 +13,11 @@
 # For Centos 7
 yum -y install deltarpm
 
-# Setting up the binaries for Virtualbox Guest additions for centos 7
-yum -y install gcc kernel-headers-$(uname -r) kernel-devel-$(uname -r) perl bzip2 dkms
+# Setting up the binaries for Virtualbox Guest additions
+yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms
+
+# If the above doesn't work try this
+# yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms kernel-devel-$(uname -r)
 
 # Mount the ISO image with the guest additions
 mkdir /cdrom
