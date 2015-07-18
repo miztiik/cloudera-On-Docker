@@ -81,6 +81,14 @@ yum -y clean all
 rpm -qa kernel
 yum remove <old-kernel-versions>
 
+# Setup the ssh keys
+cd /root
+ssh-keygen
+#Press enter twice
+chmod 700 /root/.ssh
+cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
 reboot
 
 # Setting up the binaries for Virtualbox Guest additions
@@ -93,6 +101,11 @@ mount /dev/cdrom /cdrom
 
 reboot
 
+# Set selinux to allow access to the VirtualBox Shared Folder
+chcon -Rt svirt_sandbox_file_t /media/sf_dockerRepos/dockerBckUps
+# If the above doesn't solve it
+sestatus 0
+
 ##################################################################################
 ## Here ends the configs on the operating system level
 ##################################################################################
@@ -101,16 +114,6 @@ reboot
 ##################################################################################
 ## Docker Installation & Configuration BEGINS
 ##################################################################################
-
-# Setting up the docker images/container mount point on a remote mounted directory ( in my case VirtualBox Shared Folder - not sure it will work, but would like to test it)
-mkdir /var/lib/docker
-mkdir /var/dockerRepos
-
-mount -t vboxsf dockerImages /var/lib/docker
-mount -t vboxsf dockerRepos /var/dockerRepos
-
-# Need to add steps to automount the share in the same mount point
-
 # Now we are ready to install docker - http://wiki.centos.org/Cloud/Docker
 # For Centos 6
 yum -y install docker-io
@@ -133,7 +136,7 @@ usermod -aG docker hadoopadmin
 # Stop docker service docker stop
 service docker stop
 # Verify no docker process is running 
-ps faux
+ps faux | grep -i docker
 
 # Add this line to the defaults
 # Add the google dns servers and the mount point for docker images and container data - The mounts are not working with virtualBox Shared Folders
@@ -158,6 +161,6 @@ service docker start
 ## Docker Installation & Configuration ENDS
 ##################################################################################
 
-
-
+# To pull docker centos image 6.6 from repository
+docker pull centos:6.6
 
