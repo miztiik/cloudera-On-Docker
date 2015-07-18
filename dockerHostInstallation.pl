@@ -74,6 +74,15 @@ echo "tsflags=nodocs" >> /etc/yum.conf
 # Install yum presto (for Centos 6)
 yum -y install yum-presto
 
+yum -y update
+yum -y clean all
+
+# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
+rpm -qa kernel
+yum remove <old-kernel-versions>
+
+reboot
+
 # Setting up the binaries for Virtualbox Guest additions
 yum -y install gcc kernel-devel perl
 
@@ -82,16 +91,7 @@ mkdir /cdrom
 mount /dev/cdrom /cdrom
 /cdrom/VBoxLinuxAdditions.run
 
-yum -y update
-yum -y clean all
-
 reboot
-
-# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
-rpm -qa kernel
-rpm -e <old-kernel-versions>
-
-
 
 ##################################################################################
 ## Here ends the configs on the operating system level
@@ -136,11 +136,20 @@ service docker stop
 ps faux
 
 # Add this line to the defaults
-# Add the google dns servers and the mount point for docker images and container data
-other_args="--dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImages --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G"
+# Add the google dns servers and the mount point for docker images and container data - The mounts are not working with virtualBox Shared Folders
+# Probably could try to create a new disk and assign it but that disk will not be visible in the host nor can be shared with other containers. So for now giving up on this
+# other_args="--dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/dockerImages --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G"
+
+# To enable debug mode
+# other_args="-d -D --dns 8.8.8.8 --dns 8.8.4.4"
+other_args="--dns 8.8.8.8 --dns 8.8.4.4"
 
 # Location used for temporary files, such as those created by docker load and build operations
 DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+
+# Storage options are set in /etc/sysconfig/docker-storage
+# Not using the storage options to and letting the images be in the default size
+# DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
 
 # Restart docker
 service docker start
