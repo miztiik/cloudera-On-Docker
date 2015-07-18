@@ -87,6 +87,14 @@ yum -y clean all
 rpm -qa kernel
 yum remove <old-kernel-versions>
 
+# Setup the ssh keys
+cd /root
+ssh-keygen
+#Press enter twice
+chmod 700 /root/.ssh
+cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
 reboot
 
 # Setting up the binaries for Virtualbox Guest additions
@@ -101,6 +109,11 @@ mount /dev/cdrom /cdrom
 /cdrom/VBoxLinuxAdditions.run
 
 reboot
+
+# Set selinux to allow access to the VirtualBox Shared Folder
+chcon -Rt svirt_sandbox_file_t /media/sf_dockerRepos/dockerBckUps
+# If the above doesn't solve it
+sestatus 0
 
 ##################################################################################
 ## Here ends the configs on the operating system level
@@ -133,7 +146,7 @@ usermod -aG docker hadoopadmin
 # Stop docker service docker stop
 systemctl stop docker
 # Verify no docker process is running 
-ps faux
+ps faux | grep -i docker
 
 # Add this line to the defautls
 # Add the google dns servers and the mount point for docker images and container data
@@ -142,7 +155,7 @@ ps faux
 
 # To enable debug mode
 # OPTIONS='-d -D --dns 8.8.8.8 --dns 8.8.4.4'
-OPTIONS='--dns 8.8.8.8 --dns 8.8.4.4'
+OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4'
 
 # Location used for temporary files, such as those created by docker load and build operations
 DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
@@ -151,7 +164,6 @@ DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
 # Not using the storage options to and letting the images be in the default size
 # DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
 
-
 # Restart docker
 systemctl start docker
 
@@ -159,6 +171,5 @@ systemctl start docker
 ## Docker Installation & Configuration ENDS
 ##################################################################################
 
-
-
-
+# To pull docker centos image 6.6 from repository
+docker pull centos:6.6
