@@ -24,12 +24,12 @@ DNS1=8.8.8.8
 DNS2=8.8.4.4
 EOF
 
-# If Centos7 to make the interfaces have pretty names - editing /etc/default/grub and adding "net.ifnames=0" to GRUB_CMDLINE_LINUX variable.
+# If Centos7 to make the interfaces have pretty names - editing /etc/default/grub and adding "net.ifnames=0 biosdevname=0" to GRUB_CMDLINE_LINUX variable.
 # net.ifnames=0 biosdevname=0
-# grub2-mkconfig -o /boot/grub2/grub.cfg
-# cd /etc/sysconfig/network-scripts
-# mv ifcfg-enp0s3 ifcfg-eth0
-# mv ifcfg-enp0s8 ifcfg-eth1
+grub2-mkconfig -o /boot/grub2/grub.cfg
+cd /etc/sysconfig/network-scripts
+mv ifcfg-enp0s3 ifcfg-eth0
+mv ifcfg-enp0s8 ifcfg-eth1
 
 # To remove the old device MAC Address (OPTIONAL)
 rm -r /etc/udev/rules.d/70-persistent-net.rules
@@ -79,22 +79,28 @@ echo "tsflags=nodocs" >> /etc/yum.conf
 # For Centos 7
 yum -y install deltarpm
 
+#Les update the server before guest additions need to be compiled
+yum -y update
+yum -y clean all
+
+# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
+rpm -qa kernel
+yum remove <old-kernel-versions>
+
+reboot
+
 # Setting up the binaries for Virtualbox Guest additions
-yum -y install gcc kernel-headers-$(uname -r) kernel-devel-$(uname -r) perl bzip2 dkms
+yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms
+
+# If the above doesn't work try this
+# yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms kernel-devel-$(uname -r)
 
 # Mount the ISO image with the guest additions
 mkdir /cdrom
 mount /dev/cdrom /cdrom
 /cdrom/VBoxLinuxAdditions.run
 
-yum -y update
-yum -y clean all
-
 reboot
-
-# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
-rpm -qa kernel
-rpm -e <old-kernel-versions>
 
 ##################################################################################
 ## Here ends the configs on the operating system level
@@ -131,13 +137,19 @@ ps faux
 
 # Add this line to the defautls
 # Add the google dns servers and the mount point for docker images and container data
-OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/imageRepoOnCentos7'
+# Probably could try to create a new disk and assign it but that disk will not be visible in the host nor can be shared with other containers. So for now giving up on this
+# OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4 -g /media/sf_dockerRepos/imageRepoOnCentos7'
+
+# To enable debug mode
+# OPTIONS='-d -D --dns 8.8.8.8 --dns 8.8.4.4'
+OPTIONS='--dns 8.8.8.8 --dns 8.8.4.4'
 
 # Location used for temporary files, such as those created by docker load and build operations
 DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
 
 # Storage options are set in /etc/sysconfig/docker-storage
-DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
+# Not using the storage options to and letting the images be in the default size
+# DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
 
 
 # Restart docker
