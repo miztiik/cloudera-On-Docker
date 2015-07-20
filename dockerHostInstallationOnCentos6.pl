@@ -71,6 +71,13 @@ yum -y install epel-release
 # Edit /etc/yum.conf so that docs are not installed to keep the image size small
 echo "tsflags=nodocs" >> /etc/yum.conf
 
+# Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
+sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
+sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
+
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
+
 # Install yum presto (for Centos 6)
 yum -y install yum-presto
 
@@ -105,6 +112,10 @@ reboot
 chcon -Rt svirt_sandbox_file_t /media/sf_dockerRepos/dockerBckUps
 # If the above doesn't solve it
 sestatus 0
+
+# Setup Command alias to access the shared folder
+echo "alias repos='cd /media/sf_dockerRepos'" >> /root/.bashrc
+source /root/.bashrc
 
 ##################################################################################
 ## Here ends the configs on the operating system level
@@ -147,8 +158,12 @@ ps faux | grep -i docker
 # other_args="-d -D --dns 8.8.8.8 --dns 8.8.4.4"
 other_args="--dns 8.8.8.8 --dns 8.8.4.4"
 
+# sed -ri 's/other_args=/other_args=--dns 8.8.8.8 --dns 8.8.4.4/g' /etc/sysconfig/docker
+
 # Location used for temporary files, such as those created by docker load and build operations
-DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+# DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+
+sed -ri 's/# DOCKER_TMPDIR=\/var\/tmp/DOCKER_TMPDIR=\/media\/sf_dockerRepos\/dockerTmp/g' /etc/sysconfig/docker
 
 # Storage options are set in /etc/sysconfig/docker-storage
 # Not using the storage options to and letting the images be in the default size

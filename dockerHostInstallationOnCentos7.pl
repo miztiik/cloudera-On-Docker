@@ -1,10 +1,10 @@
 ##!/usr/bin/perl
-##################################################################################
-##	Author 		: Miztiik
-##	Date   		: 17Jul2015
-##	Version		: 0.1
-##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
-##	Assumptions	: BaseOS Image - Centos 7
+	##################################################################################
+	##	Author 		: Miztiik
+	##	Date   		: 17Jul2015
+	##	Version		: 0.1
+	##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
+	##	Assumptions	: BaseOS Image - Centos 7
 ##################################################################################
 
 #Check network configs
@@ -14,7 +14,7 @@ search example.com
 nameserver 8.8.8.8
 nameserver 8.8.4.4
 EOF
-	
+
 more /etc/sysconfig/network
 
 cat > /etc/sysconfig/network << EOF
@@ -69,12 +69,19 @@ EOF
 systemctl restart network
 
 # Installing and Configuring the Software
-# Check and install if you have EPEL Packages.
+	# Check and install if you have EPEL Packages.
 # https://fedoraproject.org/wiki/EPEL
 yum -y install epel-release
 
 # Edit /etc/yum.conf so that docs are not installed to keep the image size small
 echo "tsflags=nodocs" >> /etc/yum.conf
+
+# Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
+sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
+sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
+
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # For Centos 7
 yum -y install deltarpm
@@ -115,6 +122,13 @@ chcon -Rt svirt_sandbox_file_t /media/sf_dockerRepos/dockerBckUps
 # If the above doesn't solve it
 sestatus 0
 
+# Setup Command alias to access the shared folder
+echo "alias repos='cd /media/sf_dockerRepos'" >> /root/.bashrc
+source /root/.bashrc
+
+# OPTIONAL
+# Stop logging for mail, uucp, boot etc (not going to run the m/c permenently, shouldnt be doing for test & production machines)
+
 ##################################################################################
 ## Here ends the configs on the operating system level
 ##################################################################################
@@ -143,8 +157,10 @@ usermod -aG docker hadoopadmin
 # https://forums.docker.com/t/how-do-i-change-the-docker-image-installation-directory/1169
 # On Centos/Fedora/RedHat that option is to be set in /etc/sysconfig/docker
 # On Ubuntu that option is to be set in the /etc/default/docker
+
 # Stop docker service docker stop
 systemctl stop docker
+
 # Verify no docker process is running 
 ps faux | grep -i docker
 
@@ -155,14 +171,23 @@ ps faux | grep -i docker
 
 # To enable debug mode
 # OPTIONS='-d -D --dns 8.8.8.8 --dns 8.8.4.4'
-OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4'
+# OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4'
+
+sed -ri 's/--selinux-enabled/--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4/g' /etc/sysconfig/docker
 
 # Location used for temporary files, such as those created by docker load and build operations
-DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+# DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
+
+sed -ri 's/# DOCKER_TMPDIR=\/var\/tmp/DOCKER_TMPDIR=\/media\/sf_dockerRepos\/dockerTmp/g' /etc/sysconfig/docker
 
 # Storage options are set in /etc/sysconfig/docker-storage
 # Not using the storage options to and letting the images be in the default size
-# DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=2G --storage-opt dm.loopdatasize=4G
+# DOCKER_STORAGE_OPTIONS= --storage-opt dm.basesize=5G --storage-opt dm.loopdatasize=5G
+# --storage-opt dm.loopdatasize=500GB --storage-opt dm.loopmetadatasize=10GB
+
+DOCKER_STORAGE_OPTIONS=
+
+# DOCKER_STORAGE_OPTIONS=-s devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/centos_dockerhost--centos7-docker--pool
 
 # Restart docker
 systemctl start docker
