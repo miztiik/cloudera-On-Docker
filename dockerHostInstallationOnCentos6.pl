@@ -1,8 +1,8 @@
 ##!/usr/bin/perl
 ##################################################################################
 ##	Author 		: Miztiik
-##	Date   		: 17Jul2015
-##	Version		: 0.1
+##	Date   		: 20Jul2015
+##	Version		: 0.2
 ##	Description	: This script is to used to create a dockerHost running centos6.6 from minimal DVD
 ##	Assumptions	: BaseOS Image - Centos 6.6(max supported by Cloudera 5.x)
 ##################################################################################
@@ -116,6 +116,9 @@ sestatus 0
 # Setup Command alias to access the shared folder
 echo "alias repos='cd /media/sf_dockerRepos'" >> /root/.bashrc
 source /root/.bashrc
+
+# OPTIONAL
+# Stop logging for mail, uucp, boot etc (not going to run the m/c permenently, shouldnt be doing for test & production machines)
 
 ##################################################################################
 ## Here ends the configs on the operating system level

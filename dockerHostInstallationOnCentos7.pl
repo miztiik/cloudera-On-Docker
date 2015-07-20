@@ -1,8 +1,8 @@
 ##!/usr/bin/perl
 	##################################################################################
 	##	Author 		: Miztiik
-	##	Date   		: 17Jul2015
-	##	Version		: 0.1
+	##	Date   		: 20Jul2015
+	##	Version		: 0.2
 	##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
 	##	Assumptions	: BaseOS Image - Centos 7
 ##################################################################################
