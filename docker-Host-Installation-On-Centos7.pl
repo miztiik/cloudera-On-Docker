@@ -190,7 +190,7 @@ sed -ri 's/# DOCKER_TMPDIR=\/var\/tmp/DOCKER_TMPDIR=\/media\/sf_dockerRepos\/doc
 
 DOCKER_STORAGE_OPTIONS=
 
-# DOCKER_STORAGE_OPTIONS=-s devicemapper -g /media/sf_dockerRepos/dockerImages/ --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/centos_dockerhost--centos7-docker--pool
+# DOCKER_STORAGE_OPTIONS=-s devicemapper -g /media/sf_dockerRepos/dockerImages/ --storage-opt dm.blocksize=64k --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/centos_dockerhost--centos7-docker--pool
 
 # Restart docker
 systemctl start docker
