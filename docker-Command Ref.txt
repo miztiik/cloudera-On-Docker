@@ -17,17 +17,37 @@ docker stop <container-id>
 # Starting a container
 # docker run --name <custom-name-of-the-container-to-identify> <name-of-the-container-to-boot> <shell-to-startwith>
 
-docker run -ti -h hadoopbase \
+docker run -ti --dns=172.17.42.1 \
+-h hadoopbase \
 --name hadoopbase \
--p 32768:22 \
+-p 32769:22 \
+--privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopbase:v2 /bin/bash
+
+docker run -ti --dns=172.17.42.1 \
+-h hadoopmgrnode \
+--name hadoopmgrnode \
+-p 32768:22 \
+-p 7180:7180 \
+--privileged=true \
+-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+local/hadoop_cloudera_mgr_base:v1 /bin/bash
+
+apache_node1_CID=$(docker run -ti --dns=172.17.42.1 \
+-h apache_node1 \
+--name apache_node1 \
+-p 80:80 \
+docker.io/httpd:latest /bin/bash)
 
 basenodeJOB=$(docker run -ti -p :22 -h hadoopbase -v /tmp/repos:/tmp/repos --name hadoopbase local/centos66:latest  /bin/bash -c "while true; do echo Hello world; sleep 1; done")
 
 # To find IP address through scripted means
 CID=$(docker run -d stackbrew/ubuntu-upstart)
 IPADDR=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $CID)
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${CID}
+
+apache_node1
 ssh root@$IPADDR
 
 
@@ -37,14 +57,14 @@ docker commit -m "centosUpdated + java + ssh" -a "miztiik" 195d6216b120 local/ce
 
 docker commit -m "Hadoopbase-ssh-yum-cache-on" -a "miztiik" 4fd1a6fb3948 local/hadoopbase:v2
 
-docker commit -m "SSH Server Client Running" -a "miztiik" 08b59a0178d3 local/centos66:ssh
+docker commit -m "hadoop-Cloudera-Manager-Base" -a "miztiik" 9528fe20c924 local/hadoop_cloudera_mgr_base:v1
 
 # To find out information about a container
 docker inspect <name>
 
 # To build a container from a image through a script
 # docker build --tag "local/centos66-ssh:v2" --file="/Dockerfile"
-  docker build --tag="local/hadoopbase:latest" .
+  docker build --tag="local/hadoopbase:v1" .
   
 # To destory a container
 # To remove docker images ( In order to remove an image from the host, please make sure that there are no containers actively based on it)
@@ -61,7 +81,7 @@ docker rm <container-id>
 # To backup a image
 docker save --output <save image to path>.tar <image name>
 docker save imagename > <custom-image-ref-name>.tar
-docker save --output /media/sf_dockerRepos/dockerBckUps/hadoopBasev2.tar 8b44529354f3
+docker save --output /media/sf_dockerRepos/dockerBckUps/hadoop_cloudera_mgr_base_v1.tar 275e08d2931c
 
 # To load a image from tar
 docker load -t <imagename>:<image-tag> -i <path to image tar file>
@@ -70,8 +90,11 @@ docker load < /media/sf_dockerRepos/dockerBckUps/hadoopBasev2.tar
 
 # Tagging names to images in docker
 docker tag <image> <newName>/<repoName>:<tagName>
-docker tag b6edd56be718 local/hadoopbase:v2
+docker tag 8b44529354f3 local/hadoopbase:v1
 
+# To remove all non running containers
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -q -f status=exited)
 
 # To solve device mapper errors
 service docker stop
