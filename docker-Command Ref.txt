@@ -34,11 +34,22 @@ docker run -ti --dns=172.17.42.1 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoop_cloudera_mgr_base:v1 /bin/bash
 
-apache_node1_CID=$(docker run -ti --dns=172.17.42.1 \
+docker run -d -ti --dns=172.17.42.1 -h node1 --name node1 local/hadoopbase:v2
+docker run -d -ti --dns=172.17.42.1 -h node2 --name node2 local/hadoopbase:v2
+
+apache_node1_CID=$(docker run -d -ti --dns=172.17.42.1 \
 -h apache_node1 \
 --name apache_node1 \
 -p 80:80 \
-docker.io/httpd:latest /bin/bash)
+docker.io/httpd:latest)
+
+
+apache_node2_CID=$(docker run -d -ti --dns=172.17.42.1 \
+-h apache_node2 \
+--name apache_node2 \
+-p 8080:80 \
+docker.io/httpd:latest)
+
 
 basenodeJOB=$(docker run -ti -p :22 -h hadoopbase -v /tmp/repos:/tmp/repos --name hadoopbase local/centos66:latest  /bin/bash -c "while true; do echo Hello world; sleep 1; done")
 
@@ -120,3 +131,7 @@ lsblk
 # To check the dm pool
 dmsetup ls
 dmsetup status
+
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+systemctl stop docker
