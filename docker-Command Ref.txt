@@ -17,7 +17,7 @@ docker stop <container-id>
 # Starting a container
 # docker run --name <custom-name-of-the-container-to-identify> <name-of-the-container-to-boot> <shell-to-startwith>
 
-docker run -ti --dns=172.17.42.1 \
+docker run -ti \
 -h hadoopbase \
 --name hadoopbase \
 -p 32769:22 \
@@ -25,17 +25,29 @@ docker run -ti --dns=172.17.42.1 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopbase:v2 /bin/bash
 
-docker run -ti --dns=172.17.42.1 \
+docker run -ti -d \
 -h hadoopmgrnode \
 --name hadoopmgrnode \
+-p 2891:2891 \
 -p 32768:22 \
 -p 7180:7180 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoop_cloudera_mgr_base:v1 /bin/bash
+local/hadoopmgrnode:v2 /bin/bash
 
-docker run -d -ti --dns=172.17.42.1 -h node1 --name node1 local/hadoopbase:v2
-docker run -d -ti --dns=172.17.42.1 -h node2 --name node2 local/hadoopbase:v2
+docker run -ti \
+-h n1_namenode \
+--name n1_namenode \
+-p 32769:22 \
+--privileged=true \
+-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+local/hadoopbase:v2 /bin/bash
+
+docker run -d -ti --hostname=node1 --name node1 local/hadoopbase:v2
+docker run -d -ti --hostname=node2 --name node2 local/hadoopbase:v2
+
+docker run -d -ti -h apache_node1 --name apache_node1 -p 80:80 docker.io/httpd:latest
+docker run -d -ti -h apache_node2 --name apache_node2 -p 8080:80 docker.io/httpd:latest
 
 apache_node1_CID=$(docker run -d -ti --dns=172.17.42.1 \
 -h apache_node1 \
@@ -70,6 +82,9 @@ docker commit -m "Hadoopbase-ssh-yum-cache-on" -a "miztiik" 4fd1a6fb3948 local/h
 
 docker commit -m "hadoop-Cloudera-Manager-Base" -a "miztiik" 9528fe20c924 local/hadoop_cloudera_mgr_base:v1
 
+docker commit -m "ClouderaMgrBase-repoHTTPD-2891 port" -a "miztiik" f179c5c863da local/hadoopmgrnode:v2
+
+
 # To find out information about a container
 docker inspect <name>
 
@@ -91,6 +106,8 @@ docker rm <container-id>
 
 # To backup a image
 docker save --output <save image to path>.tar <image name>
+# docker save image-repo-name > <custom-image-ref-name>.tar
+# docker save docker.io/weaveworks/weaveexec:1.0.1 >  weaveexec.tar
 docker save imagename > <custom-image-ref-name>.tar
 docker save --output /media/sf_dockerRepos/dockerBckUps/hadoop_cloudera_mgr_base_v1.tar 275e08d2931c
 
@@ -101,7 +118,8 @@ docker load < /media/sf_dockerRepos/dockerBckUps/hadoopBasev2.tar
 
 # Tagging names to images in docker
 docker tag <image> <newName>/<repoName>:<tagName>
-docker tag 8b44529354f3 local/hadoopbase:v1
+docker tag bc7f541e6b7e local/hadoopbase:v2
+hadoopBasev2.tar
 
 # To remove all non running containers
 docker stop $(docker ps -a -q)
