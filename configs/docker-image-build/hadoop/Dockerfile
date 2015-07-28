@@ -57,7 +57,7 @@ RUN echo '%wheel ALL=(ALL) ALL' >> /etc/sudoers
 # RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
 # RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
 # RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
-# RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+# RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 
 RUN mkdir -p /home/hadoopadmin/.ssh
 ADD authorized_keys /home/hadoopadmin/.ssh/

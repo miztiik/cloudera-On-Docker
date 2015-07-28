@@ -83,9 +83,8 @@ RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh
 # the nameserver priority
 RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 
-# private and public mapping
-# Usage of EXPOSE is deprecated and recommended to use -p during run
-# EXPOSE 22:32768
+# Expose the private port for mapping
+EXPOSE 22
 
 # Start the SSH daemon
 CMD ["/usr/sbin/sshd", "-D"]
