@@ -38,7 +38,7 @@ echo "nameserver ${IP}" > /etc/resolv.dnsmasq.conf
 echo 'nameserver 8.8.4.4' >> /etc/resolv.dnsmasq.conf
 
 # dhcp-range: it specifies the IP address range to lease out (e.g., from 10.1.1.50 to 10.1.1.200), and optionally lease time (e.g., 12 hours).
-# dhcp-range=10.1.1.50,10.1.1.200,12h
+	# dhcp-range=10.1.1.50,10.1.1.200,12h
 
 # sed -ri "s|listen-address=__LOCAL_IP__||g" /etc/dnsmasq.conf
 # 
@@ -58,11 +58,8 @@ echo 'nameserver 8.8.4.4' >> /etc/resolv.dnsmasq.conf
 > /etc/dnsmasq.d/docker-dns
 touch /etc/dnsmasq.d/docker-dns
 
-cat > /etc/dnsmasq.d/docker-dns << EOF
-	
 # Location of additional host entries
-addn-hosts=/docker-container-hosts
-EOF
+echo 'addn-hosts=/docker-container-hosts' >> /etc/dnsmasq.d/docker-dns
 
 # Refresh the service with new configs
 pkill -x -HUP dnsmasq
