@@ -1,31 +1,27 @@
 ##!/usr/bin/perl
 	##################################################################################
 	##	Author 		: Miztiik
-	##	Date   		: 20Jul2015
-	##	Version		: 0.2
+	##	Date   		: 24Aug2015
+	##	Version		: 0.3
 	##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
 	##	Assumptions	: BaseOS Image - Centos 7
 ##################################################################################
 
-#Check network configs
-
-cat > /etc/resolv.conf << EOF
-search example.com
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-EOF
+# Setup up Google OpenDNS Servers
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 more /etc/sysconfig/network
 
 cat > /etc/sysconfig/network << EOF
 NETWORKING=yes
-HOSTNAME=dockerHostCentos7.example.com
+HOSTNAME=dockerHostCentOS7
 DNS1=8.8.8.8
 DNS2=8.8.4.4
 EOF
 
 # If Centos7 to make the interfaces have pretty names - editing /etc/default/grub and adding "net.ifnames=0 biosdevname=0" to GRUB_CMDLINE_LINUX variable.
-# net.ifnames=0 biosdevname=0
+sed -ri 's/GRUB_CMDLINE_LINUX="rhgb quiet"/GRUB_CMDLINE_LINUX="rhgb quiet net.ifnames=0 biosdevname=0"/g' /etc/default/grub
 grub2-mkconfig -o /boot/grub2/grub.cfg
 cd /etc/sysconfig/network-scripts
 mv ifcfg-enp0s3 ifcfg-eth0
@@ -48,7 +44,7 @@ EOF
 
 #Lets create a static network on eth1 on the host
 cat > /etc/sysconfig/network-scripts/ifcfg-eth1 << EOF
-HOSTNANE=dockerHostCentos7
+HOSTNANE=dockerHostCentOS7
 DEVICE=eth1
 ONBOOT=yes
 BOOTPROTO=none
@@ -81,6 +77,7 @@ sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
 sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
 
 # Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+# This will not work unless Virtualbox Guest additions are already installed.
 sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # For Centos 7
@@ -88,11 +85,6 @@ yum -y install deltarpm
 
 #Les update the server before guest additions need to be compiled
 yum -y update
-yum -y clean all
-
-# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
-rpm -qa kernel
-yum remove <old-kernel-versions>
 
 # Setup the ssh keys - passwordless ssh
 ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
@@ -104,6 +96,10 @@ chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 
 reboot
+
+# To make the image size smaller, lets keep the number of kernels to just 1 ( OPTIONAL )
+rpm -qa kernel
+yum remove <old-kernel-versions>
 
 # Setting up the binaries for Virtualbox Guest additions
 yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms
@@ -143,7 +139,7 @@ source /root/.bashrc
 
 # Now we are ready to install docker - http://wiki.centos.org/Cloud/Docker
 # For Centos 7
-yum -y install docker
+yum -y install docker-engine
 
 # Once docker is installed, you will need to start the service in order to use it.
 systemctl start docker
