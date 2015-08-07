@@ -125,6 +125,11 @@ sestatus 0
 echo "alias repos='cd /media/sf_dockerRepos'" >> /root/.bashrc
 source /root/.bashrc
 
+# Set the iptables to allow for weave to work
+# https://github.com/weaveworks/weave/issues/1266
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
+
 # OPTIONAL
 # Stop logging for mail, uucp, boot etc (not going to run the m/c permenently, shouldnt be doing for test & production machines)
 
@@ -149,7 +154,8 @@ systemctl enable docker
 
 # Adding your user to docker group to run docker (lets setup one more username "hadoopadmin")
 useradd hadoopadmin
-echo <password> | passwd hadoopadmin --stdin
+# echo <password> | passwd hadoopadmin --stdin
+echo 'hadoopadmin:tcuser' | chpasswd
 usermod -aG docker hadoopadmin
 
 # Modify the defaults so docker uses different location for images and containers
