@@ -3,13 +3,20 @@
 ##################################################################################
 ## DNS setup in docker using Weave, Deciced to use weave as it have built in other funcationalities that can be levarage for monitoring.
 ##
-## VERSION		:0.0.1
-## DATE			:26Jul2015
+## VERSION		:0.0.2
+## DATE			:01Aug2015
 ##				:Weave uses PORT - 6783 , Use WEAVE_PORT to override
 ## Ref[1]		:https://github.com/weaveworks/weave#installation
 ## Ref[2]		:http://docs.weave.works/weave/latest_release/weavedns.html
 ## Ref[3]		:http://docs.weave.works/weave/latest_release/troubleshooting.html
 ##################################################################################
+
+# Set Environment variables here
+WEAVE_FILE=/usr/local/bin/weave
+
+# Set the Weave DNS Server subnets & nay private subdomain
+# WEAVE_DNSHOST_IP=10.2.254.1/24
+# WEAVE_DOMAINS="navcluster.org"
 
 function launch_weave () {
 	weave launch && weave launch-dns && weave launch-proxy
@@ -17,7 +24,7 @@ function launch_weave () {
 	# weave launch-dns --domain='stellaverse.srv.'
 	}
 
-WEAVE_FILE=/usr/local/bin/weave
+
 
 #check if docker is running, 'pgrep' returns 0, the process is running
 DOCKER_SERVICE=docker
@@ -29,6 +36,7 @@ if  (pgrep ${DOCKER_SERVICE} )
 	   launch_weave
 	   
 	else
+		echo ""
 	   echo "The file '$WEAVE_FILE' Does Not Exist. Downloading the images and booting them"
 	   curl -L git.io/weave -o /usr/local/bin/weave
 	   sudo chmod +x /usr/local/bin/weave
