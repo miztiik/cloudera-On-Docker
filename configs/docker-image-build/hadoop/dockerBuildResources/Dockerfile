@@ -35,7 +35,8 @@ sudo \
 && yum clean all
 
 # Lets install java in the base
-RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
+# This is bloating the docker image, until i find a elegant way to do this, will do this manually.
+# RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
 
 # RUN rpm -i jdk-8u45-linux-x64.rpm
 
