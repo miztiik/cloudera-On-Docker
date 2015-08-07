@@ -1,12 +1,11 @@
 ##################################################################################
 ##	Author 		: Miztiik
-##	Date   		: 20Jul2015
-##	Version		: 0.2
+##	Date   		: 07Aug2015
+##	Version		: 0.3
 ##	Description	: Some of the commands to help me quickly execute docker commands
 ##################################################################################
 
 # Some docker commands
-# 10Jul2015
 
 # To List Containers
 sudo docker ps –a
@@ -17,16 +16,14 @@ docker stop <container-id>
 # Starting a container
 # docker run --name <custom-name-of-the-container-to-identify> <name-of-the-container-to-boot> <shell-to-startwith>
 
-docker run -ti \
--h hadoopbase \
+docker run -d -ti \
 --name hadoopbase \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoopbase:v2 /bin/bash
+docker.io/centos:6.6 /bin/bash
 
 docker run -ti -d \
--h hadoopmgrnode \
 --name hadoopmgrnode \
 -p 2891:2891 \
 -p 32768:22 \
@@ -35,19 +32,22 @@ docker run -ti -d \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopmgrnode:v2 /bin/bash
 
-docker run -ti \
--h n1_namenode \
---name n1_namenode \
+docker run -d -ti \
+--name namenode1 \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoopbase:v2 /bin/bash
+local/hadoopbase:v1 /bin/bash
 
 docker run -d -ti --hostname=node1 --name node1 local/hadoopbase:v2
 docker run -d -ti --hostname=node2 --name node2 local/hadoopbase:v2
 
-docker run -d -ti -h apache_node1 --name apache_node1 -p 80:80 docker.io/httpd:latest
-docker run -d -ti -h apache_node2 --name apache_node2 -p 8080:80 docker.io/httpd:latest
+docker run -d -ti --name webnode1 -p 80:80 docker.io/httpd:latest
+docker run -d -ti --name webnode2 -p 8080:80 docker.io/httpd:latest
+
+
+weave run 10.128.0.5/10 -d -ti -h webnode1.weave.local --name webnode1 -p 80:80 docker.io/httpd:latest
+weave run 10.128.0.6/10 -d -ti -h webnode2.weave.local --name webnode2 -p 8080:80 docker.io/httpd:latest
 
 apache_node1_CID=$(docker run -d -ti --dns=172.17.42.1 \
 -h apache_node1 \
@@ -105,11 +105,9 @@ docker rm <container-id>
 
 
 # To backup a image
-docker save --output <save image to path>.tar <image name>
-# docker save image-repo-name > <custom-image-ref-name>.tar
 # docker save docker.io/weaveworks/weaveexec:1.0.1 >  weaveexec.tar
 docker save imagename > <custom-image-ref-name>.tar
-docker save --output /media/sf_dockerRepos/dockerBckUps/hadoop_cloudera_mgr_base_v1.tar 275e08d2931c
+
 
 # To load a image from tar
 docker load -t <imagename>:<image-tag> -i <path to image tar file>
@@ -135,7 +133,7 @@ service docker start
 thin_dump /var/lib/docker/devicemapper/devicemapper/metadata | grep "device dev_id" | wc -l
 
 # To open a shell in a running container
-docker exec -it <container-id> /bin/bash
+docker 	 -it <container-id> /bin/bash
 
 # To check container size
 du -d 2 -h /var/lib/docker/devicemapper | grep `docker inspect -f "{{.Id}}" <container_name>`
@@ -152,4 +150,9 @@ dmsetup status
 
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
-systemctl stop docker
+docker ps -a
+
+systemctl restart docker
+
+docker <watch-what-you-run> rmi $(docker images -q)
+
