@@ -88,6 +88,5 @@ RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 EXPOSE 22
 
 # Start the SSH daemon
-ENTRYPOINT [ "/usr/sbin/sshd" ]
-CMD [ "-D", "FOREGROUND" ]
+CMD [ "/usr/sbin/sshd", "-D" ]
 
