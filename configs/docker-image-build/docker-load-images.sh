@@ -2,8 +2,8 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:0.0.1
-## DATE			:26Jul2015
+## VERSION		:0.0.2
+## DATE			:6Aug2015
 ##
 ## USAGE		: This script will load images into docker.
 ##################################################################################
@@ -16,7 +16,7 @@ cd $IMAGE_LOCATION
 ## declare the list of images to load here, use double quote to avoid breaking with whitespace characters
 # declare -a imageList=("hadoopBasev2.tar" "hadoop_cloudera_mgr_base_v1.tar" "httpdBase.tar" "weavedns_1.0.1.tar" "weaveexec_1.0.1.tar" "weave_1.0.1.tar" "testing")
 
-declare -a imageList=("mysqlbase.tar")
+declare -a imageList=("centos66Base.tar" "mysqlbase.tar")
 
 # Function to load the images, planning to re-use it.
 function loadImages () {
