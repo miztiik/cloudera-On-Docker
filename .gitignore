@@ -1,3 +1,4 @@
 *.rpm
 *.tar
 *.bin
+*.repo
