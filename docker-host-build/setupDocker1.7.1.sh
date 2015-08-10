@@ -22,3 +22,9 @@ ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS \
       $BLOCK_REGISTRY \
       $INSECURE_REGISTRY
 EOF
+
+echo "DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp" >> /etc/sysconfig/docker
+
+systemctl daemon-reload
+systemctl start docker
+
