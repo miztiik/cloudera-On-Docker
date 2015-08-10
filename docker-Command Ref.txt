@@ -23,6 +23,15 @@ docker run -d -ti \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 docker.io/centos:6.6 /bin/bash
 
+docker run -d -ti \
+--name c2 \
+-p 32770:22 \
+--privileged=true \
+-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+local/hadoopbase:v3 /usr/sbin/sshd -D
+
+
+
 docker run -ti -d \
 --name hadoopmgrnode \
 -p 2891:2891 \
