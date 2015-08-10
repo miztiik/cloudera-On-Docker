@@ -79,6 +79,9 @@ CID=$(docker run -d stackbrew/ubuntu-upstart)
 IPADDR=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $CID)
 docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${CID}
 
+docker inspect --format '{{.Name}}' ${CID}
+
+
 apache_node1
 ssh root@$IPADDR
 
@@ -160,6 +163,8 @@ dmsetup status
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker ps -a
+
+docker inspect --format '{{.Name}}' $(docker ps -aq)
 
 systemctl restart docker
 
