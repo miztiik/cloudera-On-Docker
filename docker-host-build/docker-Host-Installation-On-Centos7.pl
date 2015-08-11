@@ -144,7 +144,8 @@ iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 # Now we are ready to install docker - http://wiki.centos.org/Cloud/Docker
 # For Centos 7
-yum -y install docker-engine
+curl -sSL https://get.docker.com/ | sh
+# yum -y install docker-engine
 
 # Once docker is installed, you will need to start the service in order to use it.
 systemctl start docker
