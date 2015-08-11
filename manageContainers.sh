@@ -2,7 +2,7 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:0.0.2
+## VERSION		:0.1.0
 ## DATE			:11Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
@@ -49,18 +49,37 @@ centos:6.6 /bin/bash"
 #	${#arr[*]}        # Number of items in the array
 #	${#arr[0]}        # Length of item zero
 
-# Functions to manage the containers
-declare -a puppetOptions=("Start Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
-declare -a imageList=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox" "Exit")
+docker info > /dev/null 2>&1 && printf "\n\t Preparing the menu...\n\n" || { printf "\n\tDocker is not running! Ensure Docker is running before running this script\n\n"; exit; }
 
+# Global variables
+DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
+
+shopt -s nullglob
+declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
+#declare -a imageList=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox" "Exit")
+declare -a runningContainers=("$(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2)")
+declare -a exitedContaiers=("$(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2)")
+
+declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
+# Trims the prefixes and give only file names
+imageList=( "${imageList[@]##*/}" )
+# Removes the extensions from the file names
+imageList=( "${imageList[@]%.*}" )
+	
+
+# Functions to manage the containers
 function manageContainers () {
 	#Check if any arguments are passed
 	if [ "$#" -eq 0 ]; then
 		echo "You didn't choose any options"		
 		return 1
 	fi
-	if [ "$1" == "Start Containers" ]; then
+	if [ "$1" == "Load Containers" ]; then
+		loadContainers
+		elif [ "$1" == "Start Containers" ]; then
 		startContainers
+		elif [ "$1" == "Restart Exited Containers" ]; then
+		startExitedContainers
 		elif [ "$1" == "Stop Containers" ]; then
 		stopContainers
 		elif [ "$1" == "Remove Containers" ]; then
@@ -72,7 +91,30 @@ function manageContainers () {
 	fi
 	}
 
-
+	function loadContainers () {
+	cd "$DOCKER_IMAGES_DIR"
+	printf "\n\t Choose the images to load :"
+	printf "\n\t --------------------------\n"
+	for index in ${!imageList[*]}
+	do
+		printf "%12d : %s\n" $index ${imageList[$index]}
+	done
+	printf "\t --------------------------\n"
+	
+	read -p "	Choose the images to be loaded (by indexes seperated by spaces) : " -a cIndexes
+	
+	for index in ${cIndexes[*]}
+	do
+		printf "\n\n\t Starting to load image	: %s" ${imageList[$index]}
+		docker load < "${imageList[$index]}".tar && printf "\n\t COMPLETED loading image	: %s" ${imageList[$index]} || printf "\n\t FAILED to load image	: %s" ${imageList[$index]}
+	done
+	
+	printf "\n\n\t Starting to load image	: %s" ${imageList[cIndexes[*]}
+	
+	exit 0
+	
+	}
+	
 function startContainers () {
 	printf "\n\t Choose containers to start :"
 	printf "\n\t --------------------------\n"
@@ -98,8 +140,32 @@ function startContainers () {
 	return 0
 }
 
+function startExitedContainers() {
+	printf "\n\t Choose containers to start :"
+	printf "\n\t --------------------------\n"
+	for index in ${!exitedContaiers[*]}
+	do
+		printf "%12d : %s\n" $index ${exitedContaiers[$index]}
+	done
+	printf "\t --------------------------\n"
+	
+	read -p "	Choose the containers to be started (by indexes seperated by spaces) : " -a cIndexes
+	
+	# Lets check if weave environment variable is set if not set it
+	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
+	eval $(weave proxy-env) || return 1
+	fi
+	
+	for index in ${cIndexes[*]}
+	do
+		echo -e "\n\n Starting container		: ${exitedContaiers[$index]}"
+		${!exitedContaiers[$index]} && echo -e " Successfully started container	: ${exitedContaiers[$index]}" || echo -e " FAILED to start container	: ${exitedContaiers[$index]}"
+	done
+	
+	return 0
+	}
+
 function stopContainers () {
-	declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
 	printf "\n\t Choose containers to stop :"
 	printf "\n\t --------------------------\n"
 	for index in ${!runningContainers[*]}
@@ -118,12 +184,18 @@ function stopContainers () {
 
 	return 0
 	}
+	
+
+	
+function removeContainers() {
+	docker rm -v $(docker ps -a -q -f status=exited)
+	}
 
 
 PS3=$'\n\t Choose container management task [Enter] : '
 select opt in "${puppetOptions[@]}";
 do
-    if [[ $opt != "Exit" ]] ; then
+    if [[ "$opt" != "Exit" ]] ; then
 	manageContainers "$opt"
     else
 		echo -e "\n\t You chose to exit! \n"
