@@ -13,7 +13,7 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 more /etc/sysconfig/network
 
-cat > /etc/sysconfig/network << EOF
+cat > /etc/sysconfig/network << "EOF"
 NETWORKING=yes
 HOSTNAME=dockerHostCentOS7
 DNS1=8.8.8.8
