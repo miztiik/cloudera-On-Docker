@@ -8,6 +8,14 @@
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
 ##################################################################################
 
+# Ref	:	http://wiki.bash-hackers.org/syntax/arrays
+# declare -A, introduced with Bash 4 to declare an associative array
+declare -A sentence
+
+sentence[Begin]='Be liberal in what'
+sentence[Middle]='you accept, and conservative'
+sentence[End]='in what you send'
+
 hadoopmgrnode="docker run -dti \
 --name hadoopmgrnode \
 -p 32768:22 \
@@ -56,9 +64,10 @@ DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
-#declare -a imageList=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox" "Exit")
-declare -a runningContainers=("$(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2)")
-declare -a exitedContaiers=("$(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2)")
+declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox" "Exit")
+declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY"))
+declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -91,7 +100,7 @@ function manageContainers () {
 	fi
 	}
 
-	function loadContainers () {
+function loadContainers () {
 	cd "$DOCKER_IMAGES_DIR"
 	printf "\n\t Choose the images to load :"
 	printf "\n\t --------------------------\n"
@@ -105,22 +114,28 @@ function manageContainers () {
 	
 	for index in ${cIndexes[*]}
 	do
-		printf "\n\n\t Starting to load image	: %s" ${imageList[$index]}
-		docker load < "${imageList[$index]}".tar && printf "\n\t COMPLETED loading image	: %s" ${imageList[$index]} || printf "\n\t FAILED to load image	: %s" ${imageList[$index]}
+		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList[$index]}"
+		docker load < "${imageList[$index]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList[$index]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList[$index]}"
 	done
 	
-	printf "\n\n\t Starting to load image	: %s" ${imageList[cIndexes[*]}
+	printf "\n\n\t Finished processing request for,\t: "
+	printf "\n\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+	for index in ${cIndexes[*]}
+	do
+		printf "%12d : %s\n" "${index}" "${imageList[$index]}"
+	done
+	printf "\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 	
 	exit 0
 	
 	}
-	
+
 function startContainers () {
-	printf "\n\t Choose containers to start :"
+	printf "\n\t Choose images to start :"
 	printf "\n\t --------------------------\n"
-	for index in ${!imageList[*]}
+	for index in "${!loadedImages[@]}"
 	do
-		printf "%12d : %s\n" $index ${imageList[$index]}
+		printf "%12d - %s\n" "$index" "${loadedImages[$index]}"
 	done
 	printf "\t --------------------------\n"
 	
@@ -128,16 +143,17 @@ function startContainers () {
 	
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-	eval $(weave proxy-env) || return 1
+	eval $(weave proxy-env) || { printf "\n\t Not able to set weave proxy, Aborting\n\n"; exit; }
 	fi
 	
 	for index in ${cIndexes[*]}
 	do
-		echo -e "\n\n Starting container		: ${imageList[$index]}"
-		${!imageList[$index]} && echo -e " Successfully started container	: ${imageList[$index]}" || echo -e " FAILED to start container	: ${imageList[$index]}"
+		echo -e "\n\n Starting container		: ${quickStartContainers[$index]}"
+		#${!quickStartContainers[$index]} && echo -e " Successfully started container	: ${quickStartContainers[$index]}" || echo -e " FAILED to start container	: ${quickStartContainers[$index]}"
+		true && echo -e " Successfully started container	: ${quickStartContainers[$index]}" || echo -e " FAILED to start container	: ${quickStartContainers[$index]}"
 	done
 	
-	return 0
+	exit 0
 }
 
 function startExitedContainers() {
@@ -168,9 +184,9 @@ function startExitedContainers() {
 function stopContainers () {
 	printf "\n\t Choose containers to stop :"
 	printf "\n\t --------------------------\n"
-	for index in ${!runningContainers[*]}
+	for index in "${!runningContainers[@]}"
 	do
-		printf "%12d : %s\n" $index ${runningContainers[$index]}
+		printf "%12d : %s\n" "$index" "${runningContainers[$index]}"
 	done
 	printf "\t --------------------------\n"
 	
@@ -178,17 +194,21 @@ function stopContainers () {
 	
 	for index in ${cIndexes[*]}
 	do
-		echo -e "\n\n Stopping container		: ${runningContainers[$index]}"
-		docker stop ${runningContainers[$index]} && echo -e " Successfully stopped container	: ${runningContainers[$index]}" || echo -e " FAILED to stop container	: ${runningContainers[$index]}"
+		printf "\n\n\t\t Stopping container\t\t: %s" "${runningContainers[$index]}"
+		docker stop "${runningContainers[$index]}" &> /dev/null && printf "\n\t\t Successfully stopped container\t: %s\n" "${runningContainers[$index]}" || printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers[$index]}"
 	done
 
-	return 0
+	exit 0
 	}
 	
-
-	
 function removeContainers() {
-	docker rm -v $(docker ps -a -q -f status=exited)
+	#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
+	if [[ -n $(docker ps -a -q -f status=exited) ]] 2>&1 > /dev/null; then
+	docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
+	else printf "\n\t There are no containers in exited state\n"
+	fi
+	
+	exit
 	}
 
 
