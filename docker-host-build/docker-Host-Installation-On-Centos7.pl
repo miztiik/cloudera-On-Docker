@@ -129,6 +129,11 @@ source /root/.bashrc
 # https://github.com/weaveworks/weave/issues/1266
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
+
+# For disabling selinux permenently
+# vi /etc/selinux/config
+# SELINUX=permissive
+
 # Reload the firewall configuration and make it permenent
 firewall-cmd --reload
 firewall-cmd --permenent
