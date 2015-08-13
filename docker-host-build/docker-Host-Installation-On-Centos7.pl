@@ -129,6 +129,9 @@ source /root/.bashrc
 # https://github.com/weaveworks/weave/issues/1266
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
+# Reload the firewall configuration and make it permenent
+firewall-cmd --reload
+firewall-cmd --permenent
 
 # OPTIONAL
 # Stop logging for mail, uucp, boot etc (not going to run the m/c permenently, shouldnt be doing for test & production machines)
