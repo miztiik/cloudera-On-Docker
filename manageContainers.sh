@@ -13,9 +13,9 @@
 
 # Set the colors to be used
 RED_COLOR='\e[0;31m'			# Red
-GREEN_COLOR='\e[0;32m'		# Green
-NC='\033[0m'			# No Color
-# printf "I ${RED}love${NC} Stack Overflow\n"
+GREEN_COLOR='\e[0;32m'			# Green
+NC='\033[0m'					# No Color
+# Usage : printf "I ${RED}love${NC} Stack Overflow\n"
 
 # declare -A, introduced with Bash 4 to declare an associative array
 # Array["$index"]="${runningContainers["$index"]}"
@@ -83,7 +83,7 @@ declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited C
 #declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox")
 declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY")) 
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 >/dev/null))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 &1> /dev/null))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -99,6 +99,7 @@ imageList=( "${imageList[@]%.*}" )
 # @return  Success (0) if value exists, Failure (1) otherwise
 # Usage: in_array "$needle" "${haystack[@]}"
 # See: http://fvue.nl/wiki/Bash:_Check_if_array_element_exists
+
 in_array() {
     local hay needle=$1
     shift
@@ -131,6 +132,17 @@ function flushStatus() {
 	fi
 	}
 
+function startWeave() {
+	# Lets check if weave environment variable is set if not set it
+	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
+		eval $(weave proxy-env) 
+		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
+			{ weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env) &> /dev/null; return 0; } \
+			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
+		fi		 
+	fi
+	}
+	
 function manageContainers () {
 	#Check if any arguments are passed
 	if [ "$#" -eq 0 ]; then
@@ -159,9 +171,9 @@ function loadContainers () {
 	cd "$DOCKER_IMAGES_DIR"
 	printf "\n\t Choose the images to load :"
 	printf "\n\t --------------------------\n"
-	for index in ${!imageList[*]}
+	for index in "${!imageList[@]}"
 	do
-		printf "%12d : %s\n" $index ${imageList[$index]}
+		printf "%12d : %s\n" $index "${imageList[$index]}"
 	done
 	printf "\t --------------------------\n"
 	
@@ -172,13 +184,18 @@ function loadContainers () {
 	
 	for index in "${cIndexes[@]}"
 	do
-		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
-		docker load < "${imageList["$index"]}".tar &> /dev/null \
-		&& { printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="SUCCESS"; } \
-		|| { printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="FAILED"; }
+		# Check if the chosen input is from the displayed input array
+		in_array "$index" "${!runningContainers[@]}" && \
+		{ 
+			printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
+			docker load < "${imageList["$index"]}".tar &> /dev/null \
+			&& { printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="SUCCESS"; } \
+			|| { printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="FAILED"; }
+		}
 	done
 	
-	flushStatus "cStatus"	
+	flushStatus "cStatus"
+	return 0
 	}
 
 function startContainers () {
@@ -196,47 +213,52 @@ function startContainers () {
 	read -p "	Choose the containers to be started (by indexes seperated by spaces) : " -a cIndexes
 	
 	# Lets check if weave environment variable is set if not set it
-	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-		eval $(weave proxy-env) 
-		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-			weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env) &> /dev/null || printf "\n\t Not able to start weave, Starting without weave\n\n"
-		fi		 
-	fi
+	startWeave
 	
 	for index in "${cIndexes[@]}"
 	do
-		printf "\n\n\t\t Starting container\t\t: %s" "${index}"
-		${quickStartContainers["$index"]} &> /dev/null \
-		&& { printf "\n\t\t Successfully started container\t: %s" "${index}"; cStatus["$index"]="SUCCESS"; } \
-		|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED"; }
+		# Check if the chosen input is from the displayed input array
+		in_array "$index" "${!quickStartContainers[@]}" && \
+		{ 
+			printf "\n\n\t\t Starting container\t\t: %s" "${index}"
+			${quickStartContainers["$index"]} &> /dev/null \
+			&& { printf "\n\t\t Successfully started container\t: %s" "${index}"; cStatus["$index"]="SUCCESS"; } \
+			|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED"; }
+		}
 	done
-
+	
 	flushStatus "cStatus"
 }
 
 function startExitedContainers() {
 	printf "\n\t Choose containers to start :"
 	printf "\n\t --------------------------\n"
-	for index in ${!exitedContaiers[*]}
+	for index in "${!exitedContaiers[@]}"
 	do
-		printf "%12d : %s\n" $index ${exitedContaiers[$index]}
+		printf "%12d : %s\n" $index "${exitedContaiers["$index"]}"
 	done
 	printf "\t --------------------------\n"
 	
 	read -p "	Choose the containers to be started (by indexes seperated by spaces) : " -a cIndexes
 	
 	# Lets check if weave environment variable is set if not set it
-	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-	eval $(weave proxy-env) || return 1
-	fi
+	startWeave
 	
-	for index in ${cIndexes[*]}
+	declare -A cStatus
+	
+	for index in "${cIndexes[@]}"
 	do
-		echo -e "\n\n Starting container		: ${exitedContaiers[$index]}"
-		${!exitedContaiers[$index]} && echo -e " Successfully started container	: ${exitedContaiers[$index]}" || echo -e " FAILED to start container	: ${exitedContaiers[$index]}"
+		# Check if the chosen input is from the displayed input array
+		in_array "$index" "${!runningContainers[@]}" && \
+		{ 
+			printf "\n\n\t\t Starting container\t\t: %s" "${exitedContaiers["$index"]}"
+			docker start "${exitedContaiers["$index"]}" &> /dev/null \
+			&& { printf "\n\t\t Successfully started container\t: %s" "${exitedContaiers["$index"]}"; cStatus["${exitedContaiers["$index"]}"]="SUCCESS"; } \
+			|| { printf "\n\t\t FAILED to start container\t: %s" "${exitedContaiers["$index"]}"; cStatus["${exitedContaiers["$index"]}"]="FAILED"; }
+		}
 	done
 	
-	return 0
+	flushStatus "cStatus"
 	}
 
 function stopContainers () {
@@ -256,13 +278,18 @@ function stopContainers () {
 		
 	for index in "${cIndexes[@]}"
 	do
-		printf "\n\n\t\t Attempting to stop container\t: %s" "${runningContainers["$index"]}"
-		docker stop "${runningContainers["$index"]}" &> /dev/null \
-		&& { printf "\n\t\t Stopped container\t\t: %s\n" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="SUCCESS"; } \
-		|| { printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
+		# Check if the chosen input is from the displayed input array
+		in_array "$index" "${!runningContainers[@]}" && \
+		{ 
+			printf "\n\n\t\t Attempting to stop container\t: %s" "${runningContainers["$index"]}"
+			docker stop "${runningContainers["$index"]}" &> /dev/null \
+			&& { printf "\n\t\t Stopped container\t\t: %s\n" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="SUCCESS"; } \
+			|| { printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
+		}
 	done
 
-	flushStatus "cStatus" 
+	flushStatus "cStatus"
+	return 0
 }
 	
 function removeContainers() {
