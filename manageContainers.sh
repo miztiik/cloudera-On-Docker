@@ -2,14 +2,20 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:0.1.0
-## DATE			:11Aug2015
+## VERSION		:0.1.2
+## DATE			:13Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
 ##################################################################################
 
 # Ref	:	http://wiki.bash-hackers.org/syntax/arrays
 # Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
+
+# Set the colors to be used
+RED_COLOR='\e[0;31m'			# Red
+GREEN_COLOR='\e[0;32m'		# Green
+NC='\033[0m'			# No Color
+# printf "I ${RED}love${NC} Stack Overflow\n"
 
 # declare -A, introduced with Bash 4 to declare an associative array
 # Array["$index"]="${runningContainers["$index"]}"
@@ -84,7 +90,6 @@ declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 imageList=( "${imageList[@]##*/}" )
 # Removes the extensions from the file names
 imageList=( "${imageList[@]%.*}" )
-	
 
 # Functions to manage the containers
 
@@ -113,7 +118,11 @@ function flushStatus() {
 		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 		for index in "${!myArr[@]}"
 		do
-			printf "%20d : %s\n" "${index}" "${myArr["${index}"]}"
+			if [ "${myArr["${index}"]}" == "SUCCESS" ] &> /dev/null; then
+				printf "%32s : ${GREEN_COLOR}%s${NC}\n" "$index" "${myArr["${index}"]}"
+			else
+				printf "%32s : ${RED_COLOR}%s${NC}\n" "$index" "${myArr["${index}"]}"
+			fi
 		done
 		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
 		exit		
@@ -160,12 +169,13 @@ function loadContainers () {
 	declare -A cStatus
 	
 	read -p "	 Choose the images to be loaded (by indexes seperated by spaces) : " -a cIndexes
-		
-	for index in ${cIndexes[*]}
+	
+	for index in "${cIndexes[@]}"
 	do
 		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
-		cStatus["$index"]="${imageList["$index"]}"
-		docker load < "${imageList["$index"]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"
+		docker load < "${imageList["$index"]}".tar &> /dev/null \
+		&& { printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="SUCCESS"; } \
+		|| { printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="FAILED"; }
 	done
 	
 	flushStatus "cStatus"	
@@ -193,17 +203,14 @@ function startContainers () {
 		fi		 
 	fi
 	
-	for index in ${cIndexes[*]}
+	for index in "${cIndexes[@]}"
 	do
 		printf "\n\n\t\t Starting container\t\t: %s" "${index}"
-		cStatus["${index}"]="${index}"
-		echo -e "------>cStatus["${index}"]<-----"
-		${quickStartContainers["$index"]} &> /dev/null && printf "\n\t\t Successfully started container\t: %s" "${index}" || printf "\n\t\t FAILED to start container\t: %s" "${index}"
-		
-		#cStatus["$index"]="${quickStartContainers["$index"]}"
-
+		${quickStartContainers["$index"]} &> /dev/null \
+		&& { printf "\n\t\t Successfully started container\t: %s" "${index}"; cStatus["$index"]="SUCCESS"; } \
+		|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED"; }
 	done
-	
+
 	flushStatus "cStatus"
 }
 
@@ -249,9 +256,10 @@ function stopContainers () {
 		
 	for index in "${cIndexes[@]}"
 	do
-		printf "\n\n\t\t Stopping container\t\t: %s" "${runningContainers["$index"]}"
-		cStatus["$index"]="${runningContainers["$index"]}"
-		docker stop "${runningContainers["$index"]}" &> /dev/null && printf "\n\t\t Successfully stopped container\t: %s\n" "${runningContainers["$index"]}" || printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"
+		printf "\n\n\t\t Attempting to stop container\t: %s" "${runningContainers["$index"]}"
+		docker stop "${runningContainers["$index"]}" &> /dev/null \
+		&& { printf "\n\t\t Stopped container\t\t: %s\n" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="SUCCESS"; } \
+		|| { printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
 	done
 
 	flushStatus "cStatus" 
