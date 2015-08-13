@@ -9,14 +9,13 @@
 ##################################################################################
 
 # Ref	:	http://wiki.bash-hackers.org/syntax/arrays
+# Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
+
 # declare -A, introduced with Bash 4 to declare an associative array
-declare -A sentence
+# Array["$index"]="${runningContainers["$index"]}"
+declare -A quickStartContainers
 
-sentence[Begin]='Be liberal in what'
-sentence[Middle]='you accept, and conservative'
-sentence[End]='in what you send'
-
-hadoopmgrnode="docker run -dti \
+quickStartContainers["hadoopmgrnode"]="docker run -dti \
 --name hadoopmgrnode \
 -p 32768:22 \
 -p 7180:7180 \
@@ -24,32 +23,43 @@ hadoopmgrnode="docker run -dti \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/clouderamgrnode:v1 /usr/sbin/sshd -D"
 
-namenode1="docker run -dti \
+quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopbase:v3 /usr/sbin/sshd -D"
 
-datanode1="docker run -dti \
+quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
 -p 32770:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopbase:v3 /usr/sbin/sshd -D"
 
-datanode2="docker run -dti \
+quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
 -p 32771:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/hadoopbase:v3 /usr/sbin/sshd -D"
 
-reponode="docker run -dti \
+quickStartContainers["reponode"]="docker run -dti \
 --name reponode \
 -p 2891:80 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 centos:6.6 /bin/bash"
+
+quickStartContainers["webnode1"]="docker run -dti \
+--name webnode1 \
+-p 8080:80 \
+-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+httpd:latest apachectl start"
+
+quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
+quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
+quickStartContainers["zz"]="docker run -dti httpd /bin/bash"
+
 
 # Function Manipulation
 #	${arr[*]}         # All of the items in the array
@@ -64,7 +74,7 @@ DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
-declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox")
+#declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox")
 declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY")) 
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
 declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 >/dev/null))
@@ -77,6 +87,22 @@ imageList=( "${imageList[@]%.*}" )
 	
 
 # Functions to manage the containers
+
+# Check if a value exists in an array
+# @param $1 mixed  Needle  
+# @param $2 array  Haystack
+# @return  Success (0) if value exists, Failure (1) otherwise
+# Usage: in_array "$needle" "${haystack[@]}"
+# See: http://fvue.nl/wiki/Bash:_Check_if_array_element_exists
+in_array() {
+    local hay needle=$1
+    shift
+    for hay; do
+        [[ "$hay" == "$needle" ]] && return 0
+    done
+    return 1
+}
+
 function flushStatus() {	
 	# pass assocociative array in string form to function
 	e="$( declare -p $1 )"
@@ -89,7 +115,7 @@ function flushStatus() {
 		do
 			printf "%20d : %s\n" "${index}" "${myArr["${index}"]}"
 		done
-		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
 		exit		
 	else
 	{ printf "\n\t\t Nothing was processed!!\n\n"; exit; }
@@ -131,54 +157,54 @@ function loadContainers () {
 	printf "\t --------------------------\n"
 	
 	declare -a cIndexes
+	declare -A cStatus
 	
 	read -p "	 Choose the images to be loaded (by indexes seperated by spaces) : " -a cIndexes
 		
 	for index in ${cIndexes[*]}
 	do
-		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList[$index]}"
-		docker load < "${imageList[$index]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList[$index]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList[$index]}"
+		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
+		cStatus["$index"]="${imageList["$index"]}"
+		docker load < "${imageList["$index"]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"
 	done
-		
-	if [[ -n "${cIndexes[*]}" ]] &> /dev/null; then
-		printf "\n\n\t\t Finished processing request for,"
-		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-		for index in ${cIndexes[*]}
-		do
-			printf "%20d : %s\n" "${index}" "${imageList[$index]}"
-		done
-		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-		exit		
-	else
-	{ printf "\n\t\t NO images were loaded!!\n\n"; exit; }
-	fi
 	
+	flushStatus "cStatus"	
 	}
 
 function startContainers () {
 	printf "\n\t Choose images to start :"
 	printf "\n\t --------------------------\n"
-	for index in "${!loadedImages[@]}"
+	for index in "${!quickStartContainers[@]}"
 	do
-		printf "%12d - %s\n" "$index" "${loadedImages[$index]}"
+		printf "%12s %s\n" ">" "${index}"
 	done
 	printf "\t --------------------------\n"
+	
+	declare -a cIndexes
+	declare -A cStatus
 	
 	read -p "	Choose the containers to be started (by indexes seperated by spaces) : " -a cIndexes
 	
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-	eval $(weave proxy-env) || { printf "\n\t Not able to set weave proxy, Aborting\n\n"; exit; }
+		eval $(weave proxy-env) 
+		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
+			weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env) &> /dev/null || printf "\n\t Not able to start weave, Starting without weave\n\n"
+		fi		 
 	fi
 	
 	for index in ${cIndexes[*]}
 	do
-		echo -e "\n\n Starting container		: ${quickStartContainers[$index]}"
-		#${!quickStartContainers[$index]} && echo -e " Successfully started container	: ${quickStartContainers[$index]}" || echo -e " FAILED to start container	: ${quickStartContainers[$index]}"
-		true && echo -e " Successfully started container	: ${quickStartContainers[$index]}" || echo -e " FAILED to start container	: ${quickStartContainers[$index]}"
+		printf "\n\n\t\t Starting container\t\t: %s" "${index}"
+		cStatus["${index}"]="${index}"
+		echo -e "------>cStatus["${index}"]<-----"
+		${quickStartContainers["$index"]} &> /dev/null && printf "\n\t\t Successfully started container\t: %s" "${index}" || printf "\n\t\t FAILED to start container\t: %s" "${index}"
+		
+		#cStatus["$index"]="${quickStartContainers["$index"]}"
+
 	done
 	
-	exit 0
+	flushStatus "cStatus"
 }
 
 function startExitedContainers() {
@@ -219,8 +245,6 @@ function stopContainers () {
 	read -p "	 Choose the containers to be stopped (by indexes seperated by spaces) : " -a cIndexes
 	
 	# Create associative array with format <index> <image/container Name>
-	# MAINARRAY["$key"]="${TEMPARRAY["$key"]}"
-	# or: MAINARRAY+=( ["$key"]="${TEMPARRAY["$key"]}" )
 	declare -A cStatus
 		
 	for index in "${cIndexes[@]}"
@@ -234,7 +258,7 @@ function stopContainers () {
 }
 	
 function removeContainers() {
-	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
+	[[ -z "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 	#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
 	if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
 	docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
