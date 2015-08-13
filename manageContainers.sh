@@ -64,10 +64,10 @@ DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
-declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox" "Exit")
-declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY"))
+declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox")
+declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY")) 
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 >/dev/null))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -77,6 +77,23 @@ imageList=( "${imageList[@]%.*}" )
 	
 
 # Functions to manage the containers
+function flushStatus() {
+	declare -a myArr="$1"
+	
+	if [[ -n "${myArr[*]}" ]] &> /dev/null; then
+		printf "\n\n\t\t Finished processing request for,"
+		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+		for index in ${myArr[*]}
+		do
+			printf "%20d : %s\n" "${index}" "${runningContainers[$index]}"
+		done
+		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+		exit		
+	else
+	{ printf "\n\t\t Nothing was processed!!\n\n"; exit; }
+	fi
+	}
+
 function manageContainers () {
 	#Check if any arguments are passed
 	if [ "$#" -eq 0 ]; then
@@ -101,6 +118,7 @@ function manageContainers () {
 	}
 
 function loadContainers () {
+	[[ -n "${imageList[*]}" ]] || { printf "\n\t There are no images to load!\n\n";exit; }
 	cd "$DOCKER_IMAGES_DIR"
 	printf "\n\t Choose the images to load :"
 	printf "\n\t --------------------------\n"
@@ -110,23 +128,28 @@ function loadContainers () {
 	done
 	printf "\t --------------------------\n"
 	
-	read -p "	Choose the images to be loaded (by indexes seperated by spaces) : " -a cIndexes
+	declare -a cIndexes
 	
+	read -p "	 Choose the images to be loaded (by indexes seperated by spaces) : " -a cIndexes
+		
 	for index in ${cIndexes[*]}
 	do
 		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList[$index]}"
 		docker load < "${imageList[$index]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList[$index]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList[$index]}"
 	done
 	
-	printf "\n\n\t Finished processing request for,\t: "
-	printf "\n\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-	for index in ${cIndexes[*]}
-	do
-		printf "%12d : %s\n" "${index}" "${imageList[$index]}"
-	done
-	printf "\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-	
-	exit 0
+	if [[ -n "${cIndexes[*]}" ]] &> /dev/null; then
+		printf "\n\n\t\t Finished processing request for,"
+		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+		for index in ${cIndexes[*]}
+		do
+			printf "%20d : %s\n" "${index}" "${imageList[$index]}"
+		done
+		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+		exit		
+	else
+	{ printf "\n\t\t NO images were loaded!!\n\n"; exit; }
+	fi
 	
 	}
 
@@ -182,6 +205,7 @@ function startExitedContainers() {
 	}
 
 function stopContainers () {
+	[[ -n "${runningContainers[*]}" ]] || { printf "\n\t No containers are in running state!\n\n";exit; }
 	printf "\n\t Choose containers to stop :"
 	printf "\n\t --------------------------\n"
 	for index in "${!runningContainers[@]}"
@@ -190,25 +214,23 @@ function stopContainers () {
 	done
 	printf "\t --------------------------\n"
 	
-	read -p "	Choose the containers to be stopped (by indexes seperated by spaces) : " -a cIndexes
+	read -p "	 Choose the containers to be stopped (by indexes seperated by spaces) : " -a cIndexes
 	
 	for index in ${cIndexes[*]}
 	do
 		printf "\n\n\t\t Stopping container\t\t: %s" "${runningContainers[$index]}"
 		docker stop "${runningContainers[$index]}" &> /dev/null && printf "\n\t\t Successfully stopped container\t: %s\n" "${runningContainers[$index]}" || printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers[$index]}"
 	done
-
-	exit 0
-	}
+	
+	flushStatus cIndexes
+}
 	
 function removeContainers() {
+	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 	#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
-	if [[ -n $(docker ps -a -q -f status=exited) ]] 2>&1 > /dev/null; then
+	if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
 	docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
-	else printf "\n\t There are no containers in exited state\n"
 	fi
-	
-	exit
 	}
 
 
