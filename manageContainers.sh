@@ -77,15 +77,17 @@ imageList=( "${imageList[@]%.*}" )
 	
 
 # Functions to manage the containers
-function flushStatus() {
-	declare -a myArr="$1"
+function flushStatus() {	
+	# pass assocociative array in string form to function
+	e="$( declare -p $1 )"
+	eval "declare -A myArr=${e#*=}"
 	
 	if [[ -n "${myArr[*]}" ]] &> /dev/null; then
 		printf "\n\n\t\t Finished processing request for,"
 		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-		for index in ${myArr[*]}
+		for index in "${!myArr[@]}"
 		do
-			printf "%20d : %s\n" "${index}" "${runningContainers[$index]}"
+			printf "%20d : %s\n" "${index}" "${myArr["${index}"]}"
 		done
 		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 		exit		
@@ -137,7 +139,7 @@ function loadContainers () {
 		printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList[$index]}"
 		docker load < "${imageList[$index]}".tar && printf "\n\t\t COMPLETED loading image\t: %s" "${imageList[$index]}" || printf "\n\t\t FAILED to load image\t\t: %s" "${imageList[$index]}"
 	done
-	
+		
 	if [[ -n "${cIndexes[*]}" ]] &> /dev/null; then
 		printf "\n\n\t\t Finished processing request for,"
 		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
@@ -216,13 +218,19 @@ function stopContainers () {
 	
 	read -p "	 Choose the containers to be stopped (by indexes seperated by spaces) : " -a cIndexes
 	
-	for index in ${cIndexes[*]}
+	# Create associative array with format <index> <image/container Name>
+	# MAINARRAY["$key"]="${TEMPARRAY["$key"]}"
+	# or: MAINARRAY+=( ["$key"]="${TEMPARRAY["$key"]}" )
+	declare -A cStatus
+		
+	for index in "${cIndexes[@]}"
 	do
-		printf "\n\n\t\t Stopping container\t\t: %s" "${runningContainers[$index]}"
-		docker stop "${runningContainers[$index]}" &> /dev/null && printf "\n\t\t Successfully stopped container\t: %s\n" "${runningContainers[$index]}" || printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers[$index]}"
+		printf "\n\n\t\t Stopping container\t\t: %s" "${runningContainers["$index"]}"
+		cStatus["$index"]="${runningContainers["$index"]}"
+		docker stop "${runningContainers["$index"]}" &> /dev/null && printf "\n\t\t Successfully stopped container\t: %s\n" "${runningContainers["$index"]}" || printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"
 	done
-	
-	flushStatus cIndexes
+
+	flushStatus "cStatus" 
 }
 	
 function removeContainers() {
