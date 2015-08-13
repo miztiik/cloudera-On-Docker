@@ -2,7 +2,7 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:0.1.2
+## VERSION		:2.0.1
 ## DATE			:13Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
