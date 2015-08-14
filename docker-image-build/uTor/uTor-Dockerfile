@@ -1,0 +1,7 @@
+##################################################################################
+## 
+## VERSION		: 0.0.1
+## DATE			: 14Aug2015
+##                
+## USAGE		: Dockerfile to build GUI applications within Docker, starting with firefox and uTorrent
+##################################################################################
