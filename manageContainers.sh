@@ -126,10 +126,10 @@ function flushStatus() {
 			fi
 		done
 		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
-		exit		
 	else
-	{ printf "\n\t\t Nothing was processed!!\n\n"; exit; }
+		{ printf "\n\t\t Nothing to process!!\n\n"; }
 	fi
+	exit
 	}
 
 function startWeave() {
@@ -294,10 +294,10 @@ function stopContainers () {
 	
 function removeContainers() {
 	[[ -z "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
-	#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
-	if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
-	docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
-	fi
+		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
+		if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
+			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
+		fi
 	}
 
 
