@@ -76,6 +76,10 @@ quickStartContainers["zz"]="docker run -dti httpd /bin/bash"
 docker info > /dev/null 2>&1 && printf "\n\t Preparing the menu...\n\n" || { printf "\n\tDocker is not running! Ensure Docker is running before running this script\n\n"; exit; }
 
 # Global variables
+manageContainers_ROOT=$(dirname "${BASH_SOURCE}")/..
+
+# DEFAULT_KUBECONFIG="${HOME}/.kube/config"
+
 DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
@@ -293,7 +297,7 @@ function stopContainers () {
 }
 	
 function removeContainers() {
-	[[ -z "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
+	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
 		if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
 			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
