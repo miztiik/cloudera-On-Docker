@@ -1,13 +1,13 @@
 ## hadoop base  setup docker file
 ##
-## VERSION		:0.0.6
+## VERSION		:0.0.7
 ## DATE			:17Aug2015
 ## "This image installs ssh daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 FROM centos:6.6
 MAINTAINER mystique <miztiik@gmail.com>
+
 # Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
 # Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
-
 
 # Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
 RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
@@ -37,13 +37,8 @@ RUN yum -y update && yum clean all
 # This is bloating the docker image, until i find a elegant way to do this, will do this manually.
 # RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
 
-# RUN rpm -i jdk-8u45-linux-x64.rpm
-
-# Set sshd to start by default
-RUN chkconfig sshd on
-
-# Disable ip tables
-RUN chkconfig iptables off
+# Set sshd to start by default & Disable ip tables
+RUN chkconfig sshd on && chkconfig iptables off
 
 # Need to setup /etc/hosts files for local resolving - Need to figure how to connect docker ips internally without using static ips
 
@@ -76,9 +71,7 @@ RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/s
 RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 # echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
-# Docker messes up /etc/hosts and adds two entries for 127.0.0.1
-# we try to recover from that by giving /etc/resolv.conf and therefore
-# the nameserver priority
+# the nameserver priority & might not be required when using weave
 RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 
 # Expose the private port for mapping
@@ -86,4 +79,3 @@ EXPOSE 22
 
 # Start the SSH daemon
 CMD [ "/usr/sbin/sshd", "-D" ]
-
