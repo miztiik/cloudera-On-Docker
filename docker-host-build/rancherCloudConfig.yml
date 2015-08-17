@@ -1,0 +1,24 @@
+# rancheros-install -c /var/lib/rancher/conf/cloud-config-processed.yml -f -d /dev/sda
+#cloud-config
+ssh_authorized_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5h4vVb9TAu3X4YeU/+7AoDchF4DVAuARzvAasd2H9oljfgY3UOn2jtUCMlfsdNYC6Fp1RE08b+0UShrA0ltQAEEcN45pQC2QudBB9DhMpmz4gD3M6K9Phjs974G1lviE/J4sUnX9faZf7bjAvwSVfUyvnpuCulKD5hK0A0bIN3Gky6DnoRp26zrlVQcPRLNhkYg/NeeTwwH7QufqBALw/Mm19er2p5o7aZwHuzenHM/yyMXyRAGC8GIll7jLOmsXBSGVgd5dbzCuCPe6fv3xcSB+rH9+QNj+d0nWm+U0IyfkB3QVZ2hkcSetyQ5cYaooAtfyY+a7LUOVt5sGhWcZP rancher@rancher
+network:
+  interfaces:
+    eth*: {}
+    eth0:
+      match:
+      dhcp: true
+    eth1:
+      match: eth1
+      address: 192.168.56.50/24
+      gateway: 192.168.0.0
+      mtu: 1500
+      dhcp: false
+  dns:
+    nameservers:
+      - 8.8.8.8
+      - 8.8.4.4
+    search:
+      - ncluster.org
+      - mydomain.com
+      - example.com
