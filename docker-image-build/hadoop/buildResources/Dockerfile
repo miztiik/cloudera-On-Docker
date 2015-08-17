@@ -1,10 +1,10 @@
 ## hadoop base  setup docker file
 ##
-## VERSION		:0.0.5
-## DATE			:11Aug2015
+## VERSION		:0.0.6
+## DATE			:17Aug2015
 ## "This image installs ssh daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 FROM centos:6.6
-MAINTAINER mystique <b4wt@quantumfoam.uni.me>
+MAINTAINER mystique <miztiik@gmail.com>
 
 # Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
 # Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
@@ -36,9 +36,7 @@ RUN yum -y update && yum clean all
 
 # Lets install java in the base
 # This is bloating the docker image, until i find a elegant way to do this, will do this manually.
-# RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
-
-# RUN rpm -i jdk-8u45-linux-x64.rpm
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
 
 # Set sshd to start by default
 RUN chkconfig sshd on
@@ -87,4 +85,3 @@ EXPOSE 22
 
 # Start the SSH daemon
 CMD [ "/usr/sbin/sshd", "-D" ]
-
