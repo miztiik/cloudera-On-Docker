@@ -1,5 +1,5 @@
 # rancheros-install -c /var/lib/rancher/conf/cloud-config-processed.yml -f -d /dev/sda
-#cloud-config
+# cloud-config
 ssh_authorized_keys:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5h4vVb9TAu3X4YeU/+7AoDchF4DVAuARzvAasd2H9oljfgY3UOn2jtUCMlfsdNYC6Fp1RE08b+0UShrA0ltQAEEcN45pQC2QudBB9DhMpmz4gD3M6K9Phjs974G1lviE/J4sUnX9faZf7bjAvwSVfUyvnpuCulKD5hK0A0bIN3Gky6DnoRp26zrlVQcPRLNhkYg/NeeTwwH7QufqBALw/Mm19er2p5o7aZwHuzenHM/yyMXyRAGC8GIll7jLOmsXBSGVgd5dbzCuCPe6fv3xcSB+rH9+QNj+d0nWm+U0IyfkB3QVZ2hkcSetyQ5cYaooAtfyY+a7LUOVt5sGhWcZP rancher@rancher
 network:
