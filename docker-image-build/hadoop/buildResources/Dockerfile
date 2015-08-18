@@ -1,13 +1,16 @@
-## hadoop base  setup docker file
+##################################################################################
+## 
+## VERSION		:0.0.8
+## DATE			:18Jul2015
 ##
-## VERSION		:0.0.7
-## DATE			:17Aug2015
-## "This image installs ssh daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
+## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
+##
+## Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
+## Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
+##
+##################################################################################
 FROM centos:6.6
 MAINTAINER mystique <miztiik@gmail.com>
-
-# Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
-# Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
 
 # Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
 RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
@@ -33,10 +36,22 @@ sudo
 
 RUN yum -y update && yum clean all
 
+# Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
+RUN cd /etc/yum.repos.d/ && \
+	curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo \
+	curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+	yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
+	rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
+
 # Lets install java in the base
 # This is bloating the docker image, until i find a elegant way to do this, will do this manually.
-# RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
 
+# Install the CDH 5 packages
+RUN yum -y install hadoop-hdfs \
+	hadoop-client \
+	hadoop-yarn \
+	
 # Set sshd to start by default & Disable ip tables
 RUN chkconfig sshd on && chkconfig iptables off
 
@@ -57,7 +72,6 @@ RUN ssh-keygen -q -N "" -t rsa -f /home/hadoopadmin/.ssh/id_rsa
 RUN cp /home/hadoopadmin/.ssh/id_rsa.pub /home/hadoopadmin/.ssh/authorized_keys
 RUN chmod 600 /home/hadoopadmin/.ssh/authorized_keys; chmod 700 /home/hadoopadmin/.ssh
 RUN chown -R hadoopadmin:hadoopadmin /home/hadoopadmin/.ssh && exit
-
 
 # Set up SSHD config
 RUN sed -ri 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config

@@ -1,102 +1,93 @@
 ##################################################################################
 ## Namenode setup docker file
 ##
-## VERSION		:0.0.1
-## DATE			:22Jul2015
+## VERSION		:0.0.2
+## DATE			:17Jul2015
+##
+##
+## Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
+## Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
+##
 ##################################################################################
 
-FROM local/hadoop_cloudera_mgr_base:v1
-MAINTAINER mystique <b4wt@quantumfoam.uni.me>
+FROM centos:6.6
+MAINTAINER mystique <miztiik@gmail.com>
 
-# variables
-#ENV key val
+# Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
+RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
+RUN sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
 
-# http(s)://<Server host>:<port>
-# where: <Server host> is the name or IP address of the host machine where the Cloudera Manager Server is installed. 
-# <port> is the port configured for the Cloudera Manager Server. The default port is 7180.
+# Enable the fastest mirror
+RUN sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
 
-# tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
-# Log into the Cloudera Manager Admin Console. The admin user credentials are:
-# Username: admin
-# Password: admin
+# Lets install the necessary binaries
+RUN yum -y install epel-release \
+	yum-presto \
+	passwd \
+	openssh openssh-server \
+	openssh-clients \
+	which \
+	tar \
+	wget \
+	rsync \
+	sudo
 
-RUN cd /etc/yum.repos.d/ && curl -O http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/cloudera-cdh5.repo
-RUN yum install -y hadoop hadoop-hdfs
+RUN yum -y update && yum clean all
 
+# Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
+RUN cd /etc/yum.repos.d/ && \
+	curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo \
+	curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+	yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
+	rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
 
+# Lets install java in the base
+# This is bloating the docker image, until i find a elegant way to do this, will do this manually.
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && yum -y install jdk-8u45-linux-x64.rpm && yum clean all
 
-========== Ref -==========
-dashnam
-neuron
-
-
-Transaction ID: 100000273079276	PNR No 4210121868 - PQWL/8	PQWL/5
-
-
-d/l nO - TN09 200 500 074 57
-
-Selvaraj DL - TN0920050007457
-Umadevi - Voters ID - TPN0315325
-
-	curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo
-curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm
- yum --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm
-
-docker run --dns=172.17.42.1 --hostname=c1 --name=c1 -d busybox sleep 600
-docker run -ti --dns=172.17.42.1 \
--h apache_node1 \
---name apache_node1 \
--p 80:80 \
-docker.io/httpd:latest /bin/bash
-
-RUN mv /tmp/cloudera-cdh5.repo /etc/yum.repos.d/ && 
-yum install -y openssh 
-openssh-clients \
-java-1.6.0-openjdk-devel \
-hadoop \
-hadoop-hdfs \
-hadoop-mapreduce \
-hadoop-yarn \
-spark-core
+# Install the CDH 5 packages
+RUN yum -y install hadoop-hdfs \
+	hadoop-client \
+	hadoop-yarn \
 
 
+# Set sshd to start by default & Disable ip tables
+RUN chkconfig sshd on && chkconfig iptables off
 
-epel-release \
-yum-presto \
-passwd \
-openssh openssh-server \
-openssh-clients \
-which \
-tar \
-wget \
-rsync \
-sudo
+# Need to setup /etc/hosts files for local resolving - Need to figure how to connect docker ips internally without using static ips
 
+RUN mkdir /var/run/sshd
 
+# Generates keys on the first run
+RUN  /etc/init.d/sshd start
 
+RUN useradd hadoopadmin -G wheel -d /home/hadoopadmin -s /bin/bash
+RUN echo 'hadoopadmin:tcuser' | chpasswd
+RUN echo '%wheel ALL=(ALL) ALL' >> /etc/sudoers
 
-yum update --downloadonly epel-release yum-presto  passwd  openssh openssh-server  openssh-clients  which  tar  wget  rsync  sudo
-
-# For already installed packages
-yum -y install yum-plugin-downloadonly
-yumdownloader --resolve --destdir=/media/sf_dockerRepos/dockerTmp/yum/x86_64/6/base/packages epel-release yum-presto  passwd  openssh openssh-server  openssh-clients  which  tar  wget  rsync  sudo
-
-yum -y install --downloadonly oracle-j2sdk1.7 cloudera-manager-daemons cloudera-manager-server
-
-yum --nogpgcheck localinstall cloudera-manager-daemons-*.rpm
-yum --nogpgcheck localinstall cloudera-manager-server-*.rpm
-yum --nogpgcheck localinstall cloudera-manager-agent-package.*.x86_64.rpm cloudera-manager-daemons
+# Set up SSH passwordless ssh ( First time start up of sshd will create these keys)
+RUN mkdir /home/hadoopadmin/.ssh
+RUN ssh-keygen -q -N "" -t rsa -f /home/hadoopadmin/.ssh/id_rsa
+RUN cp /home/hadoopadmin/.ssh/id_rsa.pub /home/hadoopadmin/.ssh/authorized_keys
+RUN chmod 600 /home/hadoopadmin/.ssh/authorized_keys; chmod 700 /home/hadoopadmin/.ssh
+RUN chown -R hadoopadmin:hadoopadmin /home/hadoopadmin/.ssh && exit
 
 
-yum -y install --downloadonly cloudera-manager-agent cloudera-manager-daemons
+# Set up SSHD config
+RUN sed -ri 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
 
-curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm
-yum --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm
-rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
+# Setting up password less authentication
+RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
 
-yum -y install --downloadonly avro-tools crunch flume-ng hadoop-hdfs-fuse hadoop-hdfs-nfs3 hadoop-httpfs hadoop-kms hbase-solr hive-hbase hive-webhcat hue-beeswax hue-hbase hue-impala hue-pig hue-plugins hue-rdbms hue-search hue-spark hue-sqoop hue-zookeeper impala impala-shell kite llama mahout oozie pig pig-udf-datafu search sentry solr-mapreduce spark-python sqoop sqoop2 whirr
+# Change the value to no; this will prevent the question when connecting with SSH to the host.
+RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
+# echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
-Install Cloudera Manager packages from a local repository - sudo ./cloudera-manager-installer.bin --skip_repo_package=1
+# the nameserver priority & might not be required when using weave
+RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 
-============
