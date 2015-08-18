@@ -6,3 +6,8 @@
 ## USAGE		: Dockerfile to build GUI applications within Docker, starting with firefox and uTorrent
 ##################################################################################
 
+FROM centos:6.6
+MAINTAINER mystique <miztiik@gmail.com>
+
+# Ref [1]	:	http://www.ezylinux.com/en/how-to-install-utorrent-on-centos-6/
+# Ref [2]	:	https://github.com/pknw1/docker-utorrent/blob/master/Dockerfile
