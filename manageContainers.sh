@@ -24,6 +24,7 @@ quickStartContainers["ClouderaMgrNode"]="docker run -dti \
 --name clouderamgrnode \
 -p 32768:22 \
 -p 7180:7180 \
+-p 28910:80 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 local/clouderamgrnode:v1 /usr/sbin/sshd -D"
@@ -51,7 +52,8 @@ mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
 
 quickStartContainers["RepoNode"]="docker run -dti \
 --name reponode \
--p 28910:80 \
+-p 28911:80 \
+-p 28912:8080 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 centos:6.6 /bin/bash"
 
@@ -347,7 +349,8 @@ function stop_removeContainers() {
 	removeContainers
 	exit
 	}
-
+clear
+printf "\n\n\n\n\n"
 PS3=$'\n\t Choose container management task [Enter] : '
 select opt in "${puppetOptions[@]}";
 do
