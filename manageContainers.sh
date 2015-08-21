@@ -18,11 +18,10 @@ NC='\033[0m'					# No Color
 # Usage : printf "I ${RED}love${NC} Stack Overflow\n"
 
 # declare -A, introduced with Bash 4 to declare an associative array
-# Array["$index"]="${runningContainers["$index"]}"
 declare -A quickStartContainers
 
-quickStartContainers["hadoopmgrnode"]="docker run -dti \
---name hadoopmgrnode \
+quickStartContainers["ClouderaMgrNode"]="docker run -dti \
+--name clouderamgrnode \
 -p 32768:22 \
 -p 7180:7180 \
 --privileged=true \
@@ -34,25 +33,25 @@ quickStartContainers["namenode1"]="docker run -dti \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoopbase:v3 /usr/sbin/sshd -D"
+mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
 
 quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
 -p 32770:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoopbase:v3 /usr/sbin/sshd -D"
+mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
 -p 32771:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/hadoopbase:v3 /usr/sbin/sshd -D"
+mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
 
-quickStartContainers["reponode"]="docker run -dti \
+quickStartContainers["RepoNode"]="docker run -dti \
 --name reponode \
--p 2891:80 \
+-p 28910:80 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 centos:6.6 /bin/bash"
 
@@ -60,7 +59,7 @@ quickStartContainers["webnode1"]="docker run -dti \
 --name webnode1 \
 -p 8080:80 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-httpd:latest apachectl start"
+httpd:latest /bin/bash"
 
 quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
@@ -83,11 +82,10 @@ manageContainers_ROOT=$(dirname "${BASH_SOURCE}")/..
 DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
-declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Containers" "Stop And Remove Containers" "Exit")
-#declare -a quickStartContainers=("hadoopmgrnode" "namenode1" "datanode1" "datanode2" "reponode" "mysql" "httpd" "busybox")
-declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}'| cut -d "/" -f2 | grep -v "REPOSITORY")) 
-declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 &1> /dev/null))
+declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Images" "Remove Containers" "Stop And Remove Containers" "Exit")
+declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}' | grep -v "REPOSITORY" 2> /dev/null))
+declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) 2> /dev/null | cut -d\/ -f2))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) 2> /dev/null | cut -d\/ -f2 ))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -112,6 +110,10 @@ in_array() {
     done
     return 1
 }
+
+function refreshArrStatus() {
+	exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 &1> /dev/null))
+	}
 
 function flushStatus() {	
 	# pass assocociative array in string form to function
@@ -139,7 +141,7 @@ function flushStatus() {
 function startWeave() {
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-		eval $(weave proxy-env) 
+		eval $(weave proxy-env) &> /dev/null
 		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
 			{ weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env) &> /dev/null; return 0; } \
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
@@ -161,6 +163,8 @@ function manageContainers () {
 		startExitedContainers
 		elif [ "$1" == "Stop Containers" ]; then
 		stopContainers
+		elif [ "$1" == "Remove Images" ]; then
+		removeImages
 		elif [ "$1" == "Remove Containers" ]; then
 		removeContainers
 		elif [ "$1" == "Stop And Remove Containers" ]; then
@@ -189,8 +193,8 @@ function loadContainers () {
 	for index in "${cIndexes[@]}"
 	do
 		# Check if the chosen input is from the displayed input array
-		in_array "$index" "${!runningContainers[@]}" && \
-		{ 
+		in_array "$index" "${!imageList[@]}" && \
+		{
 			printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
 			docker load < "${imageList["$index"]}".tar &> /dev/null \
 			&& { printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="SUCCESS"; } \
@@ -199,7 +203,6 @@ function loadContainers () {
 	done
 	
 	flushStatus "cStatus"
-	return 0
 	}
 
 function startContainers () {
@@ -232,6 +235,7 @@ function startContainers () {
 	done
 	
 	flushStatus "cStatus"
+	exit
 }
 
 function startExitedContainers() {
@@ -288,22 +292,61 @@ function stopContainers () {
 			printf "\n\n\t\t Attempting to stop container\t: %s" "${runningContainers["$index"]}"
 			docker stop "${runningContainers["$index"]}" &> /dev/null \
 			&& { printf "\n\t\t Stopped container\t\t: %s\n" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="SUCCESS"; } \
-			|| { printf "\n\t\t FAILED to stop container\t\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
+			|| { printf "\n\t\t FAILED to stop container\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
+		}
+	done
+
+	flushStatus "cStatus"
+}
+
+function removeImages () {
+	[[ -n "${loadedImages[*]}" ]] || { printf "\n\t There are no images in docker!\n\n";exit; }
+	
+	# Generate the menu to choose images to be removed
+	printf "\n\t Choose images to remove :"
+	printf "\n\t --------------------------\n"
+	for index in "${!loadedImages[@]}"
+	do
+		printf "%12d : %s\n" "$index" "${loadedImages[$index]}"
+	done
+	printf "\t --------------------------\n"
+	
+	read -p "	 Choose the images to be removed (by indexes seperated by spaces) : " -a cIndexes
+	
+	# Create associative array with format <index> <image/container Name>
+	declare -A cStatus
+	
+	for index in "${cIndexes[@]}"
+	do
+		# Check if the chosen input is from the displayed input array
+		in_array "$index" "${!loadedImages[@]}" && \
+		{ 
+			printf "\n\n\t\t Attempting to stop container\t: %s" "${loadedImages["$index"]}"
+			docker rmi "${loadedImages["$index"]}" &> /dev/null \
+			&& { printf "\n\t\t COMPLETED removing image\t: %s\n" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="SUCCESS"; } \
+			|| { printf "\n\t\t FAILED to remove image\t\t: %s" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="FAILED"; }
 		}
 	done
 
 	flushStatus "cStatus"
 	return 0
 }
-	
+
 function removeContainers() {
 	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
 		if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
 			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
 		fi
+	return 0
 	}
 
+function stop_removeContainers() {
+	stopContainers
+	refreshArrStatus
+	removeContainers
+	exit
+	}
 
 PS3=$'\n\t Choose container management task [Enter] : '
 select opt in "${puppetOptions[@]}";
