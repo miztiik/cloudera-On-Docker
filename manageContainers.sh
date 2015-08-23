@@ -11,6 +11,8 @@
 # Ref	:	http://wiki.bash-hackers.org/syntax/arrays
 # Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 
+# [ -n "$WEAVE_DEBUG" ] && set -x
+
 # Set the colors to be used
 RED_COLOR='\e[0;31m'			# Red
 GREEN_COLOR='\e[0;32m'			# Green
@@ -19,6 +21,20 @@ NC='\033[0m'					# No Color
 
 # declare -A, introduced with Bash 4 to declare an associative array
 declare -A quickStartContainers
+
+# Google readme recommends cAdvisor to be run in privileged mode to monitor docker container in RHEL
+# https://github.com/google/cadvisor/blob/master/docs/running.md
+quickStartContainers["cAdvisor"]="docker run \
+--detach=true \
+--name=cadvisor \
+--privileged=true \
+--volume=/cgroup:/cgroup:ro \
+--volume=/:/rootfs:ro \
+--volume=/var/run:/var/run:rw \
+--volume=/sys:/sys:ro \
+--volume=/var/lib/docker/:/var/lib/docker:ro \
+--publish=8080:8080 \
+google/cadvisor:latest"
 
 quickStartContainers["ClouderaMgrNode"]="docker run -dti \
 --name clouderamgrnode \
@@ -34,32 +50,33 @@ quickStartContainers["namenode1"]="docker run -dti \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
+local/clouderanodebase:v1 /usr/sbin/sshd -D"
 
 quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
 -p 32770:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
+local/clouderanodebase:v1 /usr/sbin/sshd -D"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
 -p 32771:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-mystique/cloudera-on-docker:latest /usr/sbin/sshd -D"
+local/clouderanodebase:v1 /usr/sbin/sshd -D"
 
 quickStartContainers["RepoNode"]="docker run -dti \
 --name reponode \
--p 28911:80 \
--p 28912:8080 \
+-p 28915:80 \
+-p 28916:8080 \
+-p 28917:8082 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-centos:6.6 /bin/bash"
+local/alpinepython:v1 /bin/sh"
 
 quickStartContainers["webnode1"]="docker run -dti \
 --name webnode1 \
--p 8080:80 \
+-p 8082:80 \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 httpd:latest /bin/bash"
 
@@ -75,9 +92,6 @@ quickStartContainers["zz"]="docker run -dti httpd /bin/bash"
 #	${#arr[0]}        # Length of item zero
 
 docker info > /dev/null 2>&1 && printf "\n\t Preparing the menu...\n\n" || { printf "\n\tDocker is not running! Ensure Docker is running before running this script\n\n"; exit; }
-
-# Global variables
-manageContainers_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 # DEFAULT_KUBECONFIG="${HOME}/.kube/config"
 
@@ -141,16 +155,21 @@ function flushStatus() {
 	}
 
 function startWeave() {
+	# Currently CentOS7 doesn't like weave containers passing around ICMP, until that is resolved
+	# https://github.com/weaveworks/weave/issues/1266
+	iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2> /dev/null
+	iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2> /dev/null
+	
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
 		eval $(weave proxy-env) &> /dev/null
 		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-			{ weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env) &> /dev/null; return 0; } \
+			{ weave launch &> /dev/null && weave launch-dns &> /dev/null && weave launch-proxy &> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
 		fi		 
 	fi
 	}
-	
+
 function manageContainers () {
 	#Check if any arguments are passed
 	if [ "$#" -eq 0 ]; then
