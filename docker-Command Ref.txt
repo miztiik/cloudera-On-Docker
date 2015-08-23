@@ -117,14 +117,16 @@ docker rm <container-id>
 
 
 # To backup a image
-# docker save docker.io/weaveworks/weaveexec:1.0.1 >  weaveexec.tar
+# docker save docker.io/weaveworks/weaveexec:1.0.2 >  weaveexec.tar
 docker save imagename > <custom-image-ref-name>.tar
-
 
 # To load a image from tar
 docker load -t <imagename>:<image-tag> -i <path to image tar file>
 docker load < <tar-filename.tar>
 docker load < /media/sf_dockerRepos/dockerBckUps/hadoopBasev2.tar
+
+# To export an container and flatten to an image
+docker export <CONTAINER ID> | docker import - some-image-name:latest
 
 # Tagging names to images in docker
 docker tag <image> <newName>/<repoName>:<tagName>
