@@ -34,8 +34,7 @@ if [ -f $WEAVE_FILE ]; then
    printf "\n\n\t FILE : $WEAVE_FILE Exists!!, \tProceeding to launch weave"
    startWeave
 else
-   printf "\n\n\t The file '$WEAVE_FILE' Does Not Exist. Downloading the images and booting them"
-   curl -L git.io/weave -o /usr/local/bin/weave
-   sudo chmod +x /usr/local/bin/weave
+   printf "\n\n\t The file '$WEAVE_FILE' Does Not Exist. Downloading the images and booting them\n\n"
+   curl -L git.io/weave -o /usr/local/bin/weave && chmod +x /usr/local/bin/weave
    startWeave
 fi
