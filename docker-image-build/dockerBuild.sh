@@ -29,7 +29,10 @@ function imageBuilder() {
 	cp "$1" "$BUILD_CONTEXT/Dockerfile"
 	cd "$BUILD_CONTEXT"
 	TAG=$(echo "$1" | cut -d "-" -f1)
-	docker build --tag="local/$TAG" . && { printf "\n\t ***************************************************\n";printf "\n\t Successfully built container : $TAG\n\n";printf "\n\t ***************************************************\n";} || printf "\n\t FAILED to build container : $TAG\n\n"
+	docker build --tag="local/$TAG" . && { 	printf "\n\t ***************************************************\n"; \
+											printf "\n\t Successfully built container : $TAG\n\n"; \
+											printf "\n\t ***************************************************\n";
+										} || printf "\n\t FAILED to build container : $TAG\n\n"
 	exit
 	}
 
