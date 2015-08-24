@@ -15,7 +15,7 @@ MAINTAINER mystique <miztiik@gmail.com>
 # Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3 & Enable the fastest mirror
 RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf && \
     sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf && \
-	sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
+    sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
 
 # Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
 RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
