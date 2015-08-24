@@ -1,7 +1,7 @@
 ##################################################################################
 ## 
-## VERSION		:0.0.9
-## DATE			:24Aug2015
+## VERSION		:0.0.10
+## DATE			:25Aug2015
 ##
 ## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
@@ -84,9 +84,6 @@ RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/s
 # Change the value to no; this will prevent the question when connecting with SSH to the host.
 RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 # echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
-
-# the nameserver priority & might not be required when using weave
-RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 
 # Expose the private port for mapping
 EXPOSE 22

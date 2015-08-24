@@ -1,7 +1,7 @@
 ##################################################################################
 ## 
-## VERSION		:0.0.9
-## DATE			:24Aug2015
+## VERSION		:0.0.10
+## DATE			:25Aug2015
 ##
 ## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
@@ -12,8 +12,19 @@
 FROM centos:6.6
 MAINTAINER mystique <miztiik@gmail.com>
 
+# Setup yum to use caching in the shared folder to allow it to be reused by multiple systems, number of copies to 3
+RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
+RUN sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
+
+# Enable the fastest mirror
+RUN sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
+
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
+
 # Lets install the necessary binaries
-RUN yum -y install epel-release \
+RUN yum -y update && \
+yum -y install epel-release \
 yum-presto \
 passwd \
 openssh openssh-server \
@@ -22,10 +33,28 @@ which \
 tar \
 wget \
 rsync \
-sudo
+sudo && \
+yum clean all
 
-RUN yum -y update && yum clean all
+# Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
+RUN cd /etc/yum.repos.d/ && \
+curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo && \
+curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
+rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
 
+# Lets install java in the base
+# This is bloating the docker image, until i find a elegant way to do this, will do this manually.
+RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && \
+yum -y install jdk-8u45-linux-x64.rpm && \
+rm -rf jdk-8u45-linux-x64.rpm && \
+yum clean all
+
+# Install the CDH 5 packages
+RUN yum -y install hadoop-hdfs \
+hadoop-client \
+hadoop-yarn \
+	
 # Set sshd to start by default & Disable ip tables
 RUN chkconfig sshd on && chkconfig iptables off
 
@@ -55,9 +84,6 @@ RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/s
 # Change the value to no; this will prevent the question when connecting with SSH to the host.
 RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 # echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
-
-# the nameserver priority & might not be required when using weave
-RUN sed -i s/"files dns"/"dns files"/ /etc/nsswitch.conf
 
 # Expose the private port for mapping
 EXPOSE 22
