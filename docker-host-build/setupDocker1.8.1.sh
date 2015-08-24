@@ -20,11 +20,13 @@ rm -rf /etc/systemd/system/docker.service.d/docker-options.conf
 cat > /etc/systemd/system/docker.service.d/docker-options.conf << "EOF"
 
 [Service]
+Type=notify
 EnvironmentFile=-/etc/sysconfig/docker
 EnvironmentFile=-/etc/sysconfig/docker-storage
 EnvironmentFile=-/etc/sysconfig/docker-network
 ExecStart=
-ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS \
+ExecStart=/usr/bin/docker -d -H fd:// \
+	  $OPTIONS \
       $DOCKER_STORAGE_OPTIONS \
       $DOCKER_NETWORK_OPTIONS \
       $BLOCK_REGISTRY \
