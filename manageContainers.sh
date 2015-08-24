@@ -2,8 +2,8 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:2.0.1
-## DATE			:13Aug2015
+## VERSION		:2.0.2
+## DATE			:23Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
 ##################################################################################
@@ -11,7 +11,7 @@
 # Ref	:	http://wiki.bash-hackers.org/syntax/arrays
 # Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 
-# [ -n "$WEAVE_DEBUG" ] && set -x
+# [ -n "$__DEBUG" ] && set -x
 
 # Set the colors to be used
 RED_COLOR='\e[0;31m'			# Red
@@ -50,21 +50,21 @@ quickStartContainers["namenode1"]="docker run -dti \
 -p 32769:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/clouderanodebase:v1 /usr/sbin/sshd -D"
+local/clouderanodebase:v2 /usr/sbin/sshd -D"
 
 quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
 -p 32770:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/clouderanodebase:v1 /usr/sbin/sshd -D"
+local/clouderanodebase:v2 /usr/sbin/sshd -D"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
 -p 32771:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/clouderanodebase:v1 /usr/sbin/sshd -D"
+local/clouderanodebase:v2 /usr/sbin/sshd -D"
 
 quickStartContainers["RepoNode"]="docker run -dti \
 --name reponode \
@@ -80,7 +80,7 @@ quickStartContainers["webnode1"]="docker run -dti \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 httpd:latest /bin/bash"
 
-quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
+quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env)"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["zz"]="docker run -dti httpd /bin/bash"
 
