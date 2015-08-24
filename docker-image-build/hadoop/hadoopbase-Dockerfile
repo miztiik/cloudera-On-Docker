@@ -23,7 +23,8 @@ RUN sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
 RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # Lets install the necessary binaries
-RUN yum -y install epel-release \
+RUN yum -y update && \
+yum -y install epel-release \
 yum-presto \
 passwd \
 openssh openssh-server \
@@ -32,9 +33,8 @@ which \
 tar \
 wget \
 rsync \
-sudo
-
-RUN yum -y update && yum clean all
+sudo && \
+yum clean all
 
 # Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
 RUN cd /etc/yum.repos.d/ && \
