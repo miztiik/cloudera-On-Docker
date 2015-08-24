@@ -2,8 +2,8 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:2.0.2
-## DATE			:23Aug2015
+## VERSION		:2.0.3
+## DATE			:24Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
 ##################################################################################
@@ -12,6 +12,9 @@
 # Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 
 # [ -n "$__DEBUG" ] && set -x
+
+# home="$( cd "$( dirname "$0" )" && pwd )"
+
 
 # Set the colors to be used
 RED_COLOR='\e[0;31m'			# Red
@@ -80,7 +83,7 @@ quickStartContainers["webnode1"]="docker run -dti \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 httpd:latest /bin/bash"
 
-quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy && eval $(weave proxy-env)"
+quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["zz"]="docker run -dti httpd /bin/bash"
 
