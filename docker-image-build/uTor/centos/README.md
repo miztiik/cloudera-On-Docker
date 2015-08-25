@@ -2,7 +2,7 @@
 
 This docker files show how to build a application that needs GUI within docker. Inspired by this [article](http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/).
 
-## Setting up the docker instructions
+## Docker instructions
 * Centos 6.6 - will be used as the based
 * Install the necessary packages like wget,libssl, unzip etc
 * Install and setup uTorrent
@@ -20,7 +20,10 @@ This docker files show how to build a application that needs GUI within docker. 
 Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .`
 
 ### Run as container
-	* To run the container with default settings, the downloads will be stored in virtualbox shared folders under `/media/sf_dockerRepos/dockerTmp/utorrent/`
+You can run the container with default settings or with your own custom configuration file. In default mode the downloads will be stored in virtualbox shared folders under `/media/sf_dockerRepos/dockerTmp/utorrent/`.
+If you have a custom configuration, say `utserver.conf`, you can add it as a data volume during docker run.
+
+#### Default settings 
 ```
 	docker run -dti --name rotnode \
 	-p 28920:2891 \
@@ -28,8 +31,8 @@ Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .`
 	-v /media/sf_dockerRepos:/media/sf_dockerRepos \
 	local/rotnode:v1 /bin/bash
 ```
+#### Custom settings
 
-	* If you have a custom configuration, say `utserver.conf`, you can add it as a data volume during docker run
 ```
 	docker run -dti --name rotnode \
 	-p 28920:2891 \
