@@ -20,22 +20,22 @@ This docker files show how to build a application that needs GUI within docker. 
 Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .`
 
 ### Run as container
-**To run the container with default settings, the downloads will be stored in virtualbox shared folders under `/media/sf_dockerRepos/dockerTmp/utorrent/`
+	* To run the container with default settings, the downloads will be stored in virtualbox shared folders under `/media/sf_dockerRepos/dockerTmp/utorrent/`
 ```
-	docker run -dti --name rotnode 
-	-p 28920:2891 
-	-p 28921:8085 
-	-v /media/sf_dockerRepos:/media/sf_dockerRepos 
+	docker run -dti --name rotnode \
+	-p 28920:2891 \
+	-p 28921:8085 \
+	-v /media/sf_dockerRepos:/media/sf_dockerRepos \
 	local/rotnode:v1 /bin/bash
 ```
 
-If you have a custom configuration, say `utserver.conf`, you can add it as a data volume during docker run
+	* If you have a custom configuration, say `utserver.conf`, you can add it as a data volume during docker run
 ```
-	docker run -dti --name rotnode 
-	-p 28920:2891 
-	-p 28921:8085 
-	-v utserver.conf:/opt/utorrent/utserver.conf 
-	-v /media/sf_dockerRepos:/media/sf_dockerRepos 
+	docker run -dti --name rotnode \
+	-p 28920:2891 \
+	-p 28921:8085 \
+	-v utserver.conf:/opt/utorrent/utserver.conf \
+	-v /media/sf_dockerRepos:/media/sf_dockerRepos \ 
 	local/rotnode:v1 /bin/bash
 ```
 
