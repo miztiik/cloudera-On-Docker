@@ -15,7 +15,8 @@ This docker files show how to build a application that needs GUI within docker. 
 * Configure the ports required
 
 ### Build Torrent App
-Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .
+Build your image using the dockerfile 
+`docker build --tag="local/rotnode:v1`
 
 ### Run Torrent Container
 `docker run -dti --name rotnode -p 28920:2891 -p 28921:8080 -v /media/sf_dockerRepos:/media/sf_dockerRepos local/rotnode:v1 /bin/bash`
