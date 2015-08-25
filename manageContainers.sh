@@ -2,8 +2,8 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:2.0.4
-## DATE			:25Aug2015
+## VERSION		:2.0.5
+## DATE			:26Aug2015
 ##
 ## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
 ##################################################################################
@@ -84,6 +84,7 @@ quickStartContainers["webnode1"]="docker run -dti \
 httpd:latest /bin/bash"
 
 quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
+quickStartContainers["Scope"]="scope launch"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:80 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
 
