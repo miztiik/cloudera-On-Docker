@@ -17,7 +17,7 @@ RUN yum -y install wget glibc openssl libgcc unzip openssl098e; \
            ln -s /usr/lib64/libcrypto.so.0.9.8e /usr/lib64/libcrypto.so.0.9.8; 
 
 # Download tor and install install it
-RUN cd /media/sf_dockerRepos/dockerTmp; \
+RUN cd /opt; \
     wget http://download.utorrent.com/linux/utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz && \
     tar zxvf utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz && \
     cd utorrent-server-v3_0 && \
@@ -30,8 +30,8 @@ EXPOSE 2891
 # Expose the web interface
 EXPOSE 8080
 
-ENTRYPOINT ["/media/sf_dockerRepos/dockerTmp/utorrent-server-v3_0/utserver"]
-CMD ["-settingspath", "/media/sf_dockerRepos/dockerTmp/utorrent-server-v3_0/"]
+ENTRYPOINT ["/opt/utorrent-server-v3_0/utserver"]
+CMD ["-settingspath", "/opt/utorrent-server-v3_0/"]
 
 # Connect to gui @ localhost:8080/gui
 # user name: admin
