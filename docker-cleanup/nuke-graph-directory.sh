@@ -1,6 +1,6 @@
 #!/bin/sh
 # https://github.com/docker/docker/blob/620339f166984540f15aadef2348646eee9a5b42/contrib/nuke-graph-directory.sh
-set -e
+# set -e
 
 dir="$1"
 
