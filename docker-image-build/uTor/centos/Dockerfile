@@ -17,24 +17,29 @@ RUN yum -y install wget tar glibc openssl libgcc unzip openssl098e; \
            ln -s /usr/lib64/libcrypto.so.0.9.8e /usr/lib64/libcrypto.so.0.9.8; 
 
 # Download utorrent and install install it
-RUN cd /opt; \
+RUN mkdir -p /opt/utorrent && cd /opt/utorrent; \
     wget http://download.utorrent.com/linux/utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz && \
-    tar zxvf utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz && \
-    cd utorrent-server-v3_0 && \
+    tar zxvf /opt/utorrent/utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz && \
+    mv /opt/utorrent/utorrent-server-v3_0/* /opt/utorrent/ && \
     unzip webui.zip && \
-    rm -rf utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz
+    rm -rf /opt/utorrent/utorrent-server-3.0-ubuntu-10.10-27079.x64.tar.gz /opt/utorrent/utorrent-server-v3_0
+	
+# Add the configuration file
+ADD utserver.conf /opt/utorrent/utserver.conf
 	
 # Expose external connectivity port
 EXPOSE 2891
 
 # Expose the web interface
-EXPOSE 8080
+EXPOSE 8085
 
-ENTRYPOINT ["/opt/utorrent-server-v3_0/utserver"]
-CMD ["-settingspath", "/opt/utorrent-server-v3_0/"]
+# Setting up the entry point to allow for graceful exit when the container is stopped
+ENTRYPOINT ["/opt/utorrent/utserver" , "-settingspath" , "/opt/utorrent/" , "-configfile"]
+CMD ["/opt/utorrent/utserver.conf"]
+
 
 # Connect to gui @ localhost:8080/gui
 # user name: admin
 # pass:
 
-## Usage : docker run -dti --name rotnode -p 28920:2891 -p 28921:8080 -v /media/sf_dockerRepos:/media/sf_dockerRepos <imageName> /bin/bash
+## Usage : docker run -dti --name rotnode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos:/media/sf_dockerRepos <imageName> /bin/bash
