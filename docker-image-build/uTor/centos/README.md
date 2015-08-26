@@ -26,22 +26,34 @@ Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .`
 You can run the container with default settings or with your own custom configuration file. In default mode the downloads will be stored in virtualbox shared folders under `/media/sf_dockerRepos/dockerTmp/utorrent/`.
 If you have a custom configuration, say `utserver.conf`, you can add it as a data volume during docker run.
 
-#### Default settings 
+##### Default settings 
 ```
 	docker run -dti --name rotnode \
 	-p 28920:2891 \
 	-p 28921:8085 \
-	-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+	-v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
 	local/rotnode:v1 /bin/bash
 ```
 
-#### Custom settings
+##### Custom settings
+The relevant custom configurations for directory location in `utserver.conf` are these, 
+```
+dir_active: 
+dir_completed: 
+dir_torrent_files: 
+dir_temp_files: 
+dir_autoload: 
+```
+The full config template can be found [here](https://gist.github.com/miztiik/004d75d07e64e2b16edd), 
+or you can use mine [here](https://github.com/miztiik/cloudera-On-Docker/blob/master/docker-image-build/uTor/centos/utserver.conf) and just the edit the bits for directories, If you are happy with your settings you
+can start your container as shown below,
+
 ```
 	docker run -dti --name rotnode \
 	-p 28920:2891 \
 	-p 28921:8085 \
 	-v utserver.conf:/opt/utorrent/utserver.conf \
-	-v /media/sf_dockerRepos:/media/sf_dockerRepos \ 
+	-v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
 	local/rotnode:v1 /bin/bash
 ```
 
