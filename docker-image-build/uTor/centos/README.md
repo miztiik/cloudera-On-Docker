@@ -28,15 +28,15 @@ If you have a custom configuration, say `utserver.conf`, you can add it as a dat
 
 ##### Default settings 
 ```
-	docker run -dti --name rotnode \
-	-p 28920:2891 \
-	-p 28921:8085 \
-	-v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	local/rotnode:v1 /bin/bash
+docker run -dti --name rotnode \
+	            -p 28920:2891 \
+	            -p 28921:8085 \
+	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
+	            local/rotnode:v1
 ```
 
 ##### Custom settings
-The relevant custom configurations for directory location in `utserver.conf` are these, 
+The relevant custom configurations for directory location are in `utserver.conf`, The full config template can be found [here](https://gist.github.com/miztiik/004d75d07e64e2b16edd), 
 ```
 dir_active: 
 dir_completed: 
@@ -44,17 +44,15 @@ dir_torrent_files:
 dir_temp_files: 
 dir_autoload: 
 ```
-The full config template can be found [here](https://gist.github.com/miztiik/004d75d07e64e2b16edd), 
-or you can use mine [here](https://github.com/miztiik/cloudera-On-Docker/blob/master/docker-image-build/uTor/centos/utserver.conf) and just the edit the bits for directories, If you are happy with your settings you
-can start your container as shown below,
 
+or You can use mine [here](https://github.com/miztiik/cloudera-On-Docker/blob/master/docker-image-build/uTor/centos/utserver.conf) and just the edit the bits for directories, If you are happy with your settings you can start your container as shown below,
 ```
-	docker run -dti --name rotnode \
-	-p 28920:2891 \
-	-p 28921:8085 \
-	-v utserver.conf:/opt/utorrent/utserver.conf \
-	-v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	local/rotnode:v1 /bin/bash
+docker run -dti --name rotnode \
+	            -p 28920:2891 \
+	            -p 28921:8085 \
+	            -v utserver.conf:/opt/utorrent/utserver.conf \
+	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
+	            local/rotnode:v1
 ```
 
 
