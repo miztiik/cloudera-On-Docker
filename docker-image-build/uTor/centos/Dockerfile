@@ -32,7 +32,7 @@ EXPOSE 2891 8085
 
 # Setting up the entry point to allow for graceful exit when the container is stopped
 ENTRYPOINT ["/opt/utorrent/utserver" , "-settingspath" , "/opt/utorrent/" , "-configfile"]
-CMD ["/opt/utorrent/utserver.conf"]
+CMD ["/opt/utorrent/utserver.conf", "&"]
 
 
 # Connect to gui @ localhost:8080/gui
