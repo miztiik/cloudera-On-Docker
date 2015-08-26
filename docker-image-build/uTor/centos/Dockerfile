@@ -1,7 +1,7 @@
 ##################################################################################
 ## 
-## VERSION		:	0.0.3
-## DATE			:	25Aug2015
+## VERSION		:	0.0.4
+## DATE			:	26Aug2015
 ##                
 ## USAGE		:	Dockerfile to build GUI applications within Docker, starting with firefox and uTorrent
 ## Ref [1]		:	http://tutorialforlinux.com/2014/07/20/how-to-install-utorrent-bittorrent-client-on-centos-6-x-32-64bit-linux-easy-guide/
@@ -12,7 +12,7 @@ FROM centos:6.6
 MAINTAINER mystique <miztiik@gmail.com>
 
 # Install necessary packages & Create sym link for libssl because the CentOS 6 has newer version than what uTorrent requires
-RUN yum -y install wget tar glibc openssl libgcc unzip openssl098e; \
+RUN yum -y install wget tar glibc libgcc unzip openssl098e; \
            ln -s /usr/lib64/libssl.so.0.9.8e /usr/lib64/libssl.so.0.9.8; \
            ln -s /usr/lib64/libcrypto.so.0.9.8e /usr/lib64/libcrypto.so.0.9.8; 
 
@@ -27,11 +27,8 @@ RUN mkdir -p /opt/utorrent && cd /opt/utorrent; \
 # Add the configuration file
 ADD utserver.conf /opt/utorrent/utserver.conf
 	
-# Expose external connectivity port
-EXPOSE 2891
-
-# Expose the web interface
-EXPOSE 8085
+# Expose external connectivity port & the web interface
+EXPOSE 2891 8085
 
 # Setting up the entry point to allow for graceful exit when the container is stopped
 ENTRYPOINT ["/opt/utorrent/utserver" , "-settingspath" , "/opt/utorrent/" , "-configfile"]
