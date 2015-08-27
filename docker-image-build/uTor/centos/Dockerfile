@@ -12,7 +12,7 @@ FROM centos:6.6
 MAINTAINER mystique <miztiik@gmail.com>
 
 # Install necessary packages & Create sym link for libssl because the CentOS 6 has newer version than what uTorrent requires
-RUN yum -y install wget tar glibc libgcc unzip openssl098e; \
+RUN yum -y install wget tar glibc libgcc openssl098e; \
            ln -s /usr/lib64/libssl.so.0.9.8e /usr/lib64/libssl.so.0.9.8; \
            ln -s /usr/lib64/libcrypto.so.0.9.8e /usr/lib64/libcrypto.so.0.9.8 && \
            yum clean all
@@ -39,4 +39,4 @@ CMD ["/opt/utorrent/utserver.conf", "&"]
 # user name: admin
 # pass:
 
-## Usage : docker run -dti --name rotnode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos:/media/sf_dockerRepos <imageName> /bin/bash
+## Usage : docker run -dti --name rotnode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2
