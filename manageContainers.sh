@@ -87,7 +87,7 @@ quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-
 quickStartContainers["Scope"]="scope launch"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:80 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
-
+quickStartContainers["rotNode"]="docker run -dti --name rotNode --p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
 
 # Function Manipulation
 #	${arr[*]}         # All of the items in the array
