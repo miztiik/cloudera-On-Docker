@@ -10,6 +10,7 @@ This docker files shows how to build your own base image for various cloudera co
 * Setup the Cloudera yum repo, import GPG Key
 	* Install Java
 	* Install core hadoop components
+	* Install the cloudera manager agent - For ports used refer [here](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_ports_cm.html)
 	* Clean up the repos,
 	* Start SSHD
 * Build the image
@@ -23,12 +24,11 @@ Known Issues:
 Build your image using the dockerfile `docker build --tag="local/clouderabasenode:v1" .`
 
 ### Run as container
-* _I recommend running weave before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode_
+* _I recommend running [Weave](https://github.com/weaveworks/weave) before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode_
 * Below syntax only opens the cms server port, you might want add more ports as you need.
 
 ```
 docker run -dti --name clouderabasenode \
-				-p 2891:22 \
 				--privileged=true \
 				mystique:clouderabasenode:latest
 
