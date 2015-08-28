@@ -7,6 +7,7 @@
 ##
 ## Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
 ## Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
+## Ref [3]	:	https://github.com/claytantor/docker-centos6-cloudera-5-3-1/blob/master/Dockerfile
 ##
 ##################################################################################
 FROM centos:6.6
@@ -24,7 +25,6 @@ RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/m
 RUN yum -y update && \
     yum -y install epel-release \
     yum-presto \
-    passwd \
     openssh openssh-server \
     openssh-clients \
     which \
