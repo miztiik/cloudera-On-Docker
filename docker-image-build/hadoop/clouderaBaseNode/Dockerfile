@@ -76,7 +76,8 @@ RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linu
 RUN yum install -y cloudera-manager-agent
                    hadoop-hdfs \
                    hadoop-client \
-                   hadoop-yarn				   
+                   hadoop-yarn && \
+				   yum clean all
 
 # Expose the private port for mapping
 EXPOSE 22
