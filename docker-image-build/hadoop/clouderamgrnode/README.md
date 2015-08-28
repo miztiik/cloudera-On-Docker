@@ -46,7 +46,7 @@ docker run -dti --name clouderaMgrNode \
 
 ### Manual steps to complete the image build
 * `sysctl vm.swappiness=0`
-* `service cloudera-scm-server-db start && service cloudera-scm-agent start`
+* `service cloudera-scm-server-db start && service cloudera-scm-server start`
 
 #### Connect to the Cloudera Manager gui
 You can access the gui here - `http://<your-clouderaMgrNode-container-ip>:7180/`
