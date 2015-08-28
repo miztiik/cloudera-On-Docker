@@ -7,33 +7,10 @@
 ##				: My idea is to create seperate images/containers for each of the cloudera services
 ##################################################################################
 
-# Version Levels used
-#	Windows 7
-#	Docker 1.7.0
-#	CentOS 6.6 (Docker image from Centos Repos 6.6)
-#	Cloudera 5.4.3
-#	
-#	Ports Required
-#	Clouder Manager Server 	:	7180
-## Now lets setup Docker to be used as Name nodes(x 1) and Data nodes (x 2), Intitally we will try to setup with 3 containers.
-
-
 # Cloudera Manager Node Installation
 
 # Installing Cloudera repositories
 # http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-0-0/CDH5-Installation-Guide/cdh5ig_cdh5_install.html#topic_4_4_1_unique_1
-
-# Download the repo and install it locally along with the GPG Key
-curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm
-rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
-yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm
-
-
-# Install the cloudera Repository - link for CM5 - choose the appropriate one for your version
-# http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_vd.html#concept_mb3_sfz_3q_unique_1
-#( just in case you are using the manuall installation this will help)
-cd /etc/yum.repos.d/
-curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo
 
 # Attempting cloudera manager managed installation
 cd /media/sf_dockerRepos/RPMs/
