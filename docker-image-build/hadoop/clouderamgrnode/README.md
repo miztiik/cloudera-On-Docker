@@ -33,7 +33,7 @@ Known Issues:
 Build your image using the dockerfile `docker build --tag="local/clouderaMgrNode:v1" .`
 
 ### Run as container
-* _I recommend running weave before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode_
+* _I recommend running [Weave](https://github.com/weaveworks/weave) before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode_
 * Below syntax only opens the cms server port, you might want add more ports as you need.
 
 ```
