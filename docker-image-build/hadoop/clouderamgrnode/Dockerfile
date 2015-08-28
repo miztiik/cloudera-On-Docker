@@ -71,24 +71,21 @@ RUN cd /etc/yum.repos.d/ && \
     yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
     rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
 
-# Lets install java in the base
 # Install Java (might need to be changed to the latest uri)
 RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && \
     yum -y install jdk-8u45-linux-x64.rpm && \
     rm -rf jdk-8u45-linux-x64.rpm
 
-# Installing the Cloudera Manager Daemons
+# Installing the Cloudera Manager Daemons & Start the DB service to allow it configure the DB & services
 RUN yum -y install cloudera-manager-server-db-2 \
            cloudera-manager-daemons \
            cloudera-manager-server && \
+           service cloudera-scm-server-db start && \
            yum clean all
 
 # I dont think we need to install agent on manager server           
 # RUN yum -y install cloudera-manager-agent && yum clean all
 		   
-# Start the DB service to allow it configure the DB & services
-RUN service cloudera-scm-server-db start
-
 # Cloudera recommends swappiness to zero (throws error - moving to start up scripts)
 # https://github.com/docker/docker/issues/5703
 # https://github.com/docker/docker/issues/4717
