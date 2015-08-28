@@ -18,14 +18,14 @@ This docker files shows how to build your own CMS in Centos6.6
 
 Known Issues:
 
-> Cloudera does not like hyphen "-" in hostnames, some times it breaks during managed installations.
+* > Cloudera does not like hyphen "-" in hostnames, some times it breaks during managed installations.
 
 ### Build your image
 
 Build your image using the dockerfile `docker build --tag="local/clouderaMgrNode:v1" .`
 
 ### Run as container
-* I recommend running weave before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode *
+** I recommend running weave before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode **
 
 ```
 docker run -dti --name clouderaMgrNode \
