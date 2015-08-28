@@ -1,8 +1,8 @@
-# Docker container for Cloudera Manager Server
+## Docker container for Cloudera Manager Server
 
-This docker files shows how to build your own CMS in Centos6.6
+This docker file shows how to build your own CMS in Centos6.6
 
-## Docker instructions
+### Docker instructions
 * Centos 6.6 - will be used as the base
 * Install the necessary packages like wget,sudo, ssh etc
 * Configure sudo for password key based login & create hadoop admin uid with keys
@@ -13,10 +13,12 @@ This docker files shows how to build your own CMS in Centos6.6
 	* Clean up the repos,
 	* Set the VM.Swapiness to cloudera recommendation - _Moved to start up script - Design/Security Issue - [Refer here](https://github.com/docker/docker/issues/5703)_ 
 	* Start the CMS Database - It configures itself using `initialize_embedded_db.sh` and populates `/etc/cloudera-scm-server/db.properties`
-		* This default postgres DB should be configurable if you pass on the necessary conf file and then start the DB
+		* The default postgres DB should be configurable if you pass on the necessary conf file and then start the DB
 	* Expose the necessary ports ( there is a whole lot of them )
 	* Start SSHD
 * Build the image
+
+The cloudera manager gui is configured with the default uid `admin` and password `admin`.
 
 Known Issues:
 
@@ -37,6 +39,10 @@ docker run -dti --name clouderaMgrNode \
 				mystique:clouderamgrnode:latest
 
 ```
+##### Connect to the Cloudera Manager gui
+
+You can access the gui here - `http://<your-clouderaMgrNode-container-ip>:7180/`
+
 ##### To Do
 * Check if the services can be started during build itself or make them start from chkconfig is a better idea?
 	* Usually CMS server takes a while to start.
