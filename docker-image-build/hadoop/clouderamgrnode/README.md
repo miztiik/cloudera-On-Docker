@@ -11,7 +11,7 @@ This docker files shows how to build your own CMS in Centos6.6
 	* Install Java
 	* Install CMS Server, Agents, Daemons
 	* Clean up the repos,
-	* Set the VM.Swapiness to cloudera recommendation - _Moved to start up script - Design/Security Issue - Refer here - https://github.com/docker/docker/issues/5703_ 
+	* Set the VM.Swapiness to cloudera recommendation - _Moved to start up script - Design/Security Issue - [Refer here](https://github.com/docker/docker/issues/5703)_ 
 	* Expose the necessary ports ( there is a whole lot of them )
 	* Start SSHD
 * Build the image
