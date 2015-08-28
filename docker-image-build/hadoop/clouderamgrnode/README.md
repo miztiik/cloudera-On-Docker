@@ -12,17 +12,21 @@ This docker file shows how to build your own CMS in Centos6.6
 	* Install CMS Server, Agents, Daemons
 	* Clean up the repos,
 	* Set the VM.Swapiness to cloudera recommendation - _Moved to start up script - Design/Security Issue - [Refer here](https://github.com/docker/docker/issues/5703)_ 
-	* Start the CMS Database - It configures itself using `initialize_embedded_db.sh` and populates `/etc/cloudera-scm-server/db.properties`
-		* The default postgres DB should be configurable if you pass on the necessary conf file and then start the DB
 	* Expose the necessary ports ( there is a whole lot of them )
 	* Start SSHD
 * Build the image
+
+The default db will have to started during the first run to allow it to initialize_ mbedded db. This can be achieved by,
+	* Start the CMS Database - `service cloudera-scm-server-db start`
+		* The script configures the DB using `initialize_embedded_db.sh` and populates `/etc/cloudera-scm-server/db.properties`
+		* The default postgres DB should be configurable if you pass on the necessary conf file and then start the DB
 
 The cloudera manager gui is configured with the default uid `admin` and password `admin`.
 
 Known Issues:
 
 > Cloudera does not like hyphen "-" in hostnames, some times it breaks during managed installations.
+> The initial configuration of the embedded DB needs privileged access and currently that is no possible within Dockerfile. _Need to check if running as `USER ROOT` will do it, but postgres will `su` to its own id before starting. So even that might not work_
 
 ### Build your image
 
@@ -39,8 +43,12 @@ docker run -dti --name clouderaMgrNode \
 				mystique:clouderamgrnode:latest
 
 ```
-##### Connect to the Cloudera Manager gui
 
+### Manual steps to complete the image build
+* `sysctl vm.swappiness=0`
+* `service cloudera-scm-server-db start && service cloudera-scm-agent start`
+
+#### Connect to the Cloudera Manager gui
 You can access the gui here - `http://<your-clouderaMgrNode-container-ip>:7180/`
 
 ##### To Do
