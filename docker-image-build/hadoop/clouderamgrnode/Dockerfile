@@ -84,8 +84,10 @@ RUN yum -y install cloudera-manager-server-db-2 \
            cloudera-manager-agent && \
            yum clean all
 
-# Cloudera recommends swappiness to zero
-RUN sysctl vm.swappiness=0
+# Cloudera recommends swappiness to zero (throws error - moving to start up scripts)
+# https://github.com/docker/docker/issues/5703
+# https://github.com/docker/docker/issues/4717
+# RUN sysctl vm.swappiness=0
 
 # Lets start the services after installation
 # RUN /etc/init.d/cloudera-scm-server-db start
