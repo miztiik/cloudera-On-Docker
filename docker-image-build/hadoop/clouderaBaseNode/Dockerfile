@@ -23,7 +23,6 @@ RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/m
 # Lets install the necessary binaries
 RUN yum -y update && \
     yum -y install epel-release \
-    yum-presto \
     openssh openssh-server \
     openssh-clients \
     which \
@@ -38,11 +37,10 @@ RUN sed -ri 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config 
     sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
     sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
 
-# Setting up password less authentication
-RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
-
-# Change the value to no; this will prevent the question when connecting with SSH to the host.
-RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
+# Step 1 - Setting up password less authentication
+# Step 2 - Change the value to no; this will prevent the question when connecting with SSH to the host.
+RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config && \
+    sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 
 # Disable ip tables & Set sshd to start by default, Generates keys on the first run
 RUN chkconfig iptables off && \
@@ -69,14 +67,14 @@ RUN cd /etc/yum.repos.d/ && \
     yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
     rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
 
-# Lets install java in the base
 # Install Java (might need to be changed to the latest uri)
 RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && \
     yum -y install jdk-8u45-linux-x64.rpm && \
     rm -rf jdk-8u45-linux-x64.rpm
 	
 # Install the core hadoop components
-RUN yum install -y hadoop-hdfs \
+RUN yum install -y cloudera-manager-agent
+                   hadoop-hdfs \
                    hadoop-client \
                    hadoop-yarn				   
 
