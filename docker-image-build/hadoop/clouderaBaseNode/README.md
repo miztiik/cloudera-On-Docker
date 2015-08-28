@@ -1,4 +1,4 @@
-# Docker container for Cloudera Manager Server
+# Docker container for Cloudera Base Nodes
 
 This docker files shows how to build your own base image for various cloudera components running on Centos6.6
 
