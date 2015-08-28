@@ -12,6 +12,8 @@ This docker files shows how to build your own CMS in Centos6.6
 	* Install CMS Server, Agents, Daemons
 	* Clean up the repos,
 	* Set the VM.Swapiness to cloudera recommendation - _Moved to start up script - Design/Security Issue - [Refer here](https://github.com/docker/docker/issues/5703)_ 
+	* Start the CMS Database - It configures itself using `initialize_embedded_db.sh` and populates `/etc/cloudera-scm-server/db.properties`
+		* This default postgres DB should be configurable if you pass on the necessary conf file and then start the DB
 	* Expose the necessary ports ( there is a whole lot of them )
 	* Start SSHD
 * Build the image
