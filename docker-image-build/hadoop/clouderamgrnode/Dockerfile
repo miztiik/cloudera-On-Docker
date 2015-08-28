@@ -84,19 +84,6 @@ RUN yum -y install cloudera-manager-server-db-2 \
 
 # I dont think we need to install agent on manager server           
 # RUN yum -y install cloudera-manager-agent && yum clean all
-		   
-# Cannot start the db here as it requires privilege
-# RUN service cloudera-scm-server-db start
-
-# Cloudera recommends swappiness to zero (throws error - moving to start up scripts)
-# https://github.com/docker/docker/issues/5703
-# https://github.com/docker/docker/issues/4717
-# RUN sysctl vm.swappiness=0
-
-# Lets start the services after installation
-# RUN /etc/init.d/cloudera-scm-server-db start
-# RUN /etc/init.d/cloudera-scm-agent start
-# RUN /etc/init.d/cloudera-scm-server start
 
 # Expose the private port for mapping ( Need to trim them accordingly after checking them out)
 EXPOSE 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
