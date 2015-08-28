@@ -80,9 +80,14 @@ RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linu
 # Installing the Cloudera Manager Daemons
 RUN yum -y install cloudera-manager-server-db-2 \
            cloudera-manager-daemons \
-           cloudera-manager-server \
-           cloudera-manager-agent && \
+           cloudera-manager-server && \
            yum clean all
+
+# I dont think we need to install agent on manager server           
+# RUN yum -y install cloudera-manager-agent && yum clean all
+		   
+# Start the DB service to allow it configure the DB & services
+RUN service cloudera-scm-server-db start
 
 # Cloudera recommends swappiness to zero (throws error - moving to start up scripts)
 # https://github.com/docker/docker/issues/5703
