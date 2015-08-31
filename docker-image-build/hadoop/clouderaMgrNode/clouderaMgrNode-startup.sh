@@ -32,3 +32,15 @@ if [ ! -n "$found_container" ]; then
 	else
 		printf "\n\n\t\t The container $DOCKER_CONTAINERS_NAME is not running!!!\n\n"
 fi
+
+
+# yum -y install cloudera-manager-agent
+# yum -y install cloudera-manager-daemons
+# yum list installed bigtop-utils
+# yum list installed bigtop-jsvc
+# yum -y install bigtop-tomcat
+# yum -y install hadoop-kms
+# yum -y install hadoop-httpfs
+# yum -y install hadoop-hdfs-nfs3
+# yum -y install hadoop-hdfs-fuse
+# yum -y install hbase
