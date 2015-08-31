@@ -25,7 +25,7 @@ NC='\033[0m'					# No Color
 # declare -A, introduced with Bash 4 to declare an associative array
 declare -A quickStartContainers
 
-clouderaBaseNode="mystique/clouderabasenode:v1"
+clouderaBaseNode="mystique/clouderabasenode:v3"
 
 # Google readme recommends cAdvisor to be run in privileged mode to monitor docker container in RHEL
 # https://github.com/google/cadvisor/blob/master/docs/running.md
@@ -48,7 +48,7 @@ quickStartContainers["ClouderaMgrNode"]="docker run -dti \
 -p 28910:80 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-local/clouderamgrnode:v1 /usr/sbin/sshd -D"
+mystique/clouderamgrnode:latest /usr/sbin/sshd -D"
 
 quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
