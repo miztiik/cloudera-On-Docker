@@ -1,10 +1,10 @@
 ##!/usr/bin/perl
-	##################################################################################
-	##	Author 		: Miztiik
-	##	Date   		: 24Aug2015
-	##	Version		: 0.3
-	##	Description	: This script is to used to create a dockerHost running centos7 from minimal DVD
-	##	Assumptions	: BaseOS Image - Centos 7
+##################################################################################
+##	Author			:	Miztiik
+##	Date   			:	31Aug2015
+##	Version			:	0.4
+##	Description		:	This script is to used to create a dockerHost running centos7 from minimal DVD
+##	Assumptions		:	BaseOS Image - Centos 7
 ##################################################################################
 
 # Setup up Google OpenDNS Servers
@@ -67,7 +67,7 @@ systemctl restart network
 # Installing and Configuring the Software
 	# Check and install if you have EPEL Packages.
 # https://fedoraproject.org/wiki/EPEL
-yum -y install epel-release
+yum -y install epel-release && yum clean all
 
 # Edit /etc/yum.conf so that docs are not installed to keep the image size small
 echo "tsflags=nodocs" >> /etc/yum.conf
@@ -76,15 +76,11 @@ echo "tsflags=nodocs" >> /etc/yum.conf
 sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf
 sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf
 
-# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
-# This will not work unless Virtualbox Guest additions are already installed.
-sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
-
 # For Centos 7
-yum -y install deltarpm
+yum -y install deltarpm && yum clean all
 
 #Les update the server before guest additions need to be compiled
-yum -y update
+yum -y update && yum clean all
 
 # Setup the ssh keys - passwordless ssh
 ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
@@ -102,10 +98,7 @@ rpm -qa kernel
 yum remove <old-kernel-versions>
 
 # Setting up the binaries for Virtualbox Guest additions
-yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms
-
-# If the above doesn't work try this
-# yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms kernel-devel-$(uname -r)
+yum -y install gcc kernel-headers-$(uname -r) perl bzip2 dkms && yum clean all
 
 # Mount the ISO image with the guest additions
 mkdir /cdrom
@@ -113,6 +106,10 @@ mount /dev/cdrom /cdrom
 /cdrom/VBoxLinuxAdditions.run
 
 reboot
+
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+# This will not work unless Virtualbox Guest additions are already installed.
+sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # Set selinux to allow access to the VirtualBox Shared Folder
 chcon -Rt svirt_sandbox_file_t /media/sf_dockerRepos/dockerBckUps
@@ -136,7 +133,7 @@ iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 # Reload the firewall configuration and make it permenent
 firewall-cmd --reload
-firewall-cmd --permenent
+firewall-cmd --permanent
 
 # OPTIONAL
 # Stop logging for mail, uucp, boot etc (not going to run the m/c permenently, shouldnt be doing for test & production machines)
@@ -175,16 +172,8 @@ usermod -aG docker hadoopadmin
 # Stop docker service docker stop
 systemctl stop docker
 
-# Verify no docker process is running 
-ps faux | grep -i docker
-
-# Add this line to the defautls
-# Add the google dns servers and the mount point for docker images and container data
 # Probably could try to create a new disk and assign it but that disk will not be visible in the host nor can be shared with other containers. So for now giving up on this
-# OPTIONS='--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4'
 
-
-# sed -ri 's/--selinux-enabled/--selinux-enabled --dns 8.8.8.8 --dns 8.8.4.4/g' /etc/sysconfig/docker
 
 # Location used for temporary files, such as those created by docker load and build operations
 # DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp
