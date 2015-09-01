@@ -28,7 +28,38 @@ if [ ! -n "$found_container" ]; then
 	service cloudera-scm-server start
 	
 	# RUN /etc/init.d/cloudera-scm-agent start
+	
+	# Setup the ssh-key for password less login, the nodes should be running already.
+	su - hadoopadmin
+	cd /home/hadoopadmin/.ssh
+	rm -rf *
+	scp hadoopadmin@namenode1:/home/hadoopadmin/.ssh/* /home/hadoopadmin/.ssh/
 
+	# Set up the SCM hostserver in the nodes
+	ssh namenode1
+	sudo su
+	sed -ri 's/server_host=localhost/server_host=clouderamgrnode.weave.local/g' /etc/cloudera-scm-agent/config.ini
+	sysctl vm.swappiness=0
+	service cloudera-scm-agent start
+	exit
+	exit
+	
+	ssh datanode1
+	sudo su
+	sed -ri 's/server_host=localhost/server_host=clouderamgrnode.weave.local/g' /etc/cloudera-scm-agent/config.ini
+	sysctl vm.swappiness=0
+	service cloudera-scm-agent start
+	exit
+	exit
+	
+	ssh datanode2
+	sudo su
+	sed -ri 's/server_host=localhost/server_host=clouderamgrnode.weave.local/g' /etc/cloudera-scm-agent/config.ini
+	sysctl vm.swappiness=0
+	service cloudera-scm-agent start
+	exit
+	exit
+	
 	else
 		printf "\n\n\t\t The container $DOCKER_CONTAINERS_NAME is not running!!!\n\n"
 fi
