@@ -26,6 +26,7 @@ NC='\033[0m'					# No Color
 declare -A quickStartContainers
 
 clouderaBaseNode="mystique/clouderabasenode:v3"
+clouderaMgrNode="mystique/clouderamgrnode:latest"
 
 # Google readme recommends cAdvisor to be run in privileged mode to monitor docker container in RHEL
 # https://github.com/google/cadvisor/blob/master/docs/running.md
@@ -41,14 +42,13 @@ quickStartContainers["cAdvisor"]="docker run \
 --publish=8080:8080 \
 google/cadvisor:latest"
 
-quickStartContainers["ClouderaMgrNode"]="docker run -dti \
+quickStartContainers["ClouderaManagerNode"]="docker run -dti \
 --name clouderamgrnode \
--p 32768:22 \
 -p 7180:7180 \
 -p 28910:80 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-mystique/clouderamgrnode:latest /usr/sbin/sshd -D"
+${clouderaMgrNode}"
 
 quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
@@ -58,14 +58,12 @@ ${clouderaBaseNode}"
 
 quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
--p 32770:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${clouderaBaseNode}"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
--p 32771:22 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${clouderaBaseNode}"
@@ -156,7 +154,7 @@ function flushStatus() {
 	else
 		{ printf "\n\t\t Nothing to process!!\n\n"; }
 	fi
-	exit
+	return 0
 	}
 
 function startWeave() {
@@ -229,6 +227,8 @@ function loadContainers () {
 	done
 	
 	flushStatus "cStatus"
+	
+	exit
 	}
 
 function startContainers () {
@@ -261,6 +261,7 @@ function startContainers () {
 	done
 	
 	flushStatus "cStatus"
+	
 	exit
 }
 
@@ -293,6 +294,8 @@ function startExitedContainers() {
 	done
 	
 	flushStatus "cStatus"
+	
+	exit
 	}
 
 function stopContainers () {
@@ -323,6 +326,8 @@ function stopContainers () {
 	done
 
 	flushStatus "cStatus"
+	
+	return 0
 }
 
 function removeImages () {
@@ -355,6 +360,7 @@ function removeImages () {
 	done
 
 	flushStatus "cStatus"
+	
 	return 0
 }
 
@@ -362,7 +368,9 @@ function removeContainers() {
 	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
 		if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
-			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && { printf "\n\t REMOVED all exited containers\n\n"; exit; } || { printf "\n\t Not able to remove containers\n\n"; exit; }
+			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && \
+			{ printf "\n\t REMOVED all exited containers\n\n"; exit; } || \
+			{ printf "\n\t Not able to remove containers\n\n"; exit; }
 		fi
 	return 0
 	}
