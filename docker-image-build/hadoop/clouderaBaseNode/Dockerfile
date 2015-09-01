@@ -1,7 +1,7 @@
 ##################################################################################
 ## 
-## VERSION		:0.0.10
-## DATE			:25Aug2015
+## VERSION		:0.0.11
+## DATE			:01Sep2015
 ##
 ## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
@@ -16,9 +16,9 @@ MAINTAINER mystique <miztiik@gmail.com>
 RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf && \
     sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf && \
     sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
-
-# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
-RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
+	
+# Have a suspicion that this line bloats up the size.
+# RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # Lets install the necessary binaries
 RUN yum -y update && \
