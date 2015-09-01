@@ -4,7 +4,7 @@ This docker files shows how to build your own base image for various cloudera co
 
 ## Docker instructions
 * Centos 6.6 - will be used as the base
-* Install the necessary packages like wget,sudo, ssh etc
+* Install the necessary packages like wget,sudo, ssh etc (all needed for cloudera manager)
 * Configure sudo for password key based login & create hadoop admin uid with keys
 * Disable IP Tables, Selinux ( by default selinux is disabled in centos6.6 & *Cloudera doesn't like Selinux as of now* )
 * Setup the Cloudera yum repo, import GPG Key
@@ -21,7 +21,7 @@ Known Issues:
 
 ### Build your image
 
-Build your image using the dockerfile `docker build --tag="local/clouderabasenode:v1" .`
+Build your image using the dockerfile `docker build --tag="local/clouderabasenode:latest" .`
 
 ### Run as container
 * _I recommend running [Weave](https://github.com/weaveworks/weave) before starting this node, as Weave DNS takes care of the Hostname/IP Constraints required by Cloudera & It likes the container to run in privileged mode_
