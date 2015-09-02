@@ -15,9 +15,9 @@
 
 # WEAVE_DEBUG
 
+# $0 is the name of the script itself.
 args=("$@")
 
-# ${args[0]} ${args[1]} ${args[2]}
 
 # home="$( cd "$( dirname "$0" )" && pwd )"
 
@@ -180,30 +180,6 @@ function startWeave() {
 	fi
 	}
 
-function manageContainers () {
-	#Check if any arguments are passed
-	if [ "$#" -eq 0 ]; then
-		echo "You didn't choose any options"		
-		return 1
-	fi
-	if [ "$1" == "Load Containers" ]; then
-		loadContainers
-		elif [ "$1" == "Start Containers" ]; then
-		startContainers
-		elif [ "$1" == "Restart Exited Containers" ]; then
-		startExitedContainers
-		elif [ "$1" == "Stop Containers" ]; then
-		stopContainers
-		elif [ "$1" == "Remove Images" ]; then
-		removeImages
-		elif [ "$1" == "Remove Containers" ]; then
-		removeContainers
-		elif [ "$1" == "Stop And Remove Containers" ]; then
-		stop_removeContainers
-		elif [ "$1" == "Exit" ]; then
-		return 0
-	fi
-	}
 
 function loadContainers () {
 	[[ -n "${imageList[*]}" ]] || { printf "\n\t There are no images to load!\n\n";exit; }
@@ -388,15 +364,43 @@ function stop_removeContainers() {
 	removeContainers
 	exit
 	}
-clear
-printf "\n\n\n\n\n"
-PS3=$'\n\t Choose container management task [Enter] : '
-select opt in "${puppetOptions[@]}";
-do
-    if [[ "$opt" != "Exit" ]] ; then
-	manageContainers "$opt"
-    else
-		echo -e "\n\t You chose to exit! \n"
-        break
-    fi
-done
+	
+function manageContainers() {
+	printf "\n\t Choose one of the below actions to perform :"
+	printf "\n\t -------------------------------------------\n\n"
+	for index in "${!puppetOptions[@]}"; do 
+		printf "\t\t%s : %s\n" "$index" "${puppetOptions["$index"]}"
+	done
+	printf "\n\t -------------------------------------------\n\n"
+
+	read -p "	 Your choice (by index seperated by spaces) : " opt
+	
+	#Check if any arguments are passed ( or 'opt' is empty )
+	if [ -z "$opt" ]; then
+		printf "\n\n\t You didn't choose any option!!!\n\n"		
+		manageContainers
+		return 1
+	fi
+	
+	if [ "${puppetOptions["$opt"]}" == "Load Containers" ]; then
+		loadContainers
+		elif [ "${puppetOptions["$opt"]}" == "Start Containers" ]; then
+		startContainers
+		elif [ "${puppetOptions["$opt"]}" == "Restart Exited Containers" ]; then
+		startExitedContainers
+		elif [ "${puppetOptions["$opt"]}" == "Stop Containers" ]; then
+		stopContainers
+		elif [ "${puppetOptions["$opt"]}" == "Remove Images" ]; then
+		removeImages
+		elif [ "${puppetOptions["$opt"]}" == "Remove Containers" ]; then
+		removeContainers
+		elif [ "${puppetOptions["$opt"]}" == "Stop And Remove Containers" ]; then
+		stop_removeContainers
+		elif [ "${puppetOptions["$opt"]}" == "Exit" ]; then
+		return 0
+	fi
+	
+	exit
+	}
+	
+	manageContainers
