@@ -13,6 +13,12 @@
 
 # [ -n "$__DEBUG" ] && set -x
 
+# WEAVE_DEBUG
+
+args=("$@")
+
+# ${args[0]} ${args[1]} ${args[2]}
+
 # home="$( cd "$( dirname "$0" )" && pwd )"
 
 
@@ -86,6 +92,7 @@ quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-
 quickStartContainers["Scope"]="scope launch"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:80 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
+quickStartContainers["alpinetestPriv"]="docker run -dti --privileged=true --name alpinetestPriv -p 28919:8080 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
 quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos/dockerTmp/utorrent/utserver.conf:/opt/utorrent/utserver.conf -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
 
 # Function Manipulation
@@ -361,7 +368,7 @@ function removeImages () {
 
 	flushStatus "cStatus"
 	
-	return 0
+	exit
 }
 
 function removeContainers() {
