@@ -16,6 +16,7 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <!--
 	Ref [1] - http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Installation
+	Ref [2] - http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-Installation-Guide/cdh5ig_hdfs_cluster_deploy.html?scroll=topic_11_2_1_unique_1
 -->
 
 <!-- Put site-specific property overrides in this file. -->

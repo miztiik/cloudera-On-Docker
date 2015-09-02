@@ -23,10 +23,16 @@
 	<!-- 
 		Ref[1] - http://hadoop.apache.org/docs/r1.2.1/cluster_setup.html
 		Ref[2] - http://gbif.blogspot.in/2011/01/setting-up-hadoop-cluster-part-1-manual.html
+		Ref[3] - http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-Installation-Guide/cdh5ig_yarn_cluster_deploy.html?scroll=topic_11_4
 	-->
 	<property>
         <name>mapred.job.tracker</name>
 		<value>namenode1.weave.local:9001</value>
 	</property>
+	
+	<property>
+	<name>mapreduce.framework.name</name>
+	<value>yarn</value>
+</property>
 	
 </configuration>
