@@ -1,13 +1,13 @@
 ##################################################################################
 ## 
-## VERSION		:0.0.10
-## DATE			:25Aug2015
+## VERSION		:	0.0.11
+## DATE			:	02Sep2015
 ##
-## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
+## DESCRIPTION	:	"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
-## Ref [1]	:	https://docs.docker.com/examples/running_ssh_service/
-## Ref [2]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
-## Ref [3]	:	https://github.com/claytantor/docker-centos6-cloudera-5-3-1/blob/master/Dockerfile
+## Ref [1]		:	https://docs.docker.com/examples/running_ssh_service/
+## Ref [2]		:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
+## Ref [3]		:	https://github.com/claytantor/docker-centos6-cloudera-5-3-1/blob/master/Dockerfile
 ##
 ##################################################################################
 FROM centos:6.6
@@ -17,9 +17,6 @@ MAINTAINER mystique <miztiik@gmail.com>
 RUN sed -ri 's/keepcache=0/keepcache=1/g' /etc/yum.conf && \
     sed -ri 's/installonly_limit=5/installonly_limit=3/g' /etc/yum.conf && \
     sed -ri 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
-
-# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
-RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 
 # Lets install the necessary binaries
 RUN yum -y update && \
@@ -52,7 +49,11 @@ RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linu
 RUN yum -y install hadoop-hdfs \
     hadoop-client \
     hadoop-yarn && \
-    yum clean all
+    yum clean all && \
+	rm -rf /var/tmp/* /tmp/* /var/cache/*
+	
+# Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
+RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
 	
 # Disable ip tables & Set sshd to start by default, Generates keys on the first run
 RUN chkconfig iptables off && \
