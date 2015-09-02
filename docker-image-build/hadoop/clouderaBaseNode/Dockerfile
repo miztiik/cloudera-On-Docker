@@ -1,12 +1,12 @@
 ##################################################################################
 ## 
-## VERSION		:0.0.11
-## DATE			:01Sep2015
+## VERSION		:	0.0.11
+## DATE			:	01Sep2015
 ##
-## DESCRIPTION	:"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
+## DESCRIPTION	:	"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
-## Ref [1]	:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
-## Ref [2]	:	https://github.com/claytantor/docker-centos6-cloudera-5-3-1/blob/master/Dockerfile
+## Ref [1]		:	https://registry.hub.docker.com/u/sequenceiq/hadoop-docker/dockerfile/
+## Ref [2]		:	https://github.com/claytantor/docker-centos6-cloudera-5-3-1/blob/master/Dockerfile
 ##
 ##################################################################################
 FROM centos:6.6
