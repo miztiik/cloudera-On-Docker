@@ -11,6 +11,10 @@
 ## Ref[2]		:https://docs.docker.com/reference/commandline/daemon/
 ##################################################################################
 
+# Install the latest version of docker
+curl -sSL https://get.docker.com/ | sh
+
+# Stop docker to setup temporary folder
 systemctl stop docker
 
 mkdir /etc/systemd/system/docker.service.d
@@ -39,8 +43,6 @@ EOF
 yum -y install docker-selinux
 
 # Set the temp directory & different location for images
-# printf 'OPTIONS="-g /media/sf_dockerRepos/dockerImages"\n' >> /etc/sysconfig/docker
-
 printf "DOCKER_TMPDIR=/media/sf_dockerRepos/dockerTmp\n" >> /etc/sysconfig/docker
 
 # Set the ip tables on host for weave to work with ICMP
