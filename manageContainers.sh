@@ -2,18 +2,13 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:2.0.5
-## DATE			:26Aug2015
-##
-## USAGE		:This script will help to start, stop and remove containers. Poor mans version of kitematic
+## VERSION		:	2.0.6
+## DATE			:	02Sep2015
+##	
+## USAGE		:	This script will help to start, stop and remove containers. Poor mans version of kitematic
+## Ref[1]		:	http://wiki.bash-hackers.org/syntax/arrays
+## Ref[2]		:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 ##################################################################################
-
-# Ref	:	http://wiki.bash-hackers.org/syntax/arrays
-# Ref	:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
-
-# [ -n "$__DEBUG" ] && set -x
-
-# WEAVE_DEBUG
 
 # $0 is the name of the script itself.
 args=("$@")
@@ -26,12 +21,13 @@ args=("$@")
 RED_COLOR='\e[0;31m'			# Red
 GREEN_COLOR='\e[0;32m'			# Green
 NC='\033[0m'					# No Color
-# Usage : printf "I ${RED}love${NC} Stack Overflow\n"
+# Usage : printf "I ${RED}love${NC} in my scripts\n"
 
 # declare -A, introduced with Bash 4 to declare an associative array
 declare -A quickStartContainers
 
-clouderaBaseNode="mystique/clouderabasenode:v3"
+
+hadoopBaseNode="mystique/hadoopbase:latest"
 clouderaMgrNode="mystique/clouderamgrnode:latest"
 
 # Google readme recommends cAdvisor to be run in privileged mode to monitor docker container in RHEL
@@ -60,19 +56,25 @@ quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-${clouderaBaseNode}"
+${hadoopBaseNode}"
 
 quickStartContainers["datanode1"]="docker run -dti \
 --name datanode1 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-${clouderaBaseNode}"
+${hadoopBaseNode}"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
-${clouderaBaseNode}"
+${hadoopBaseNode}"
+
+quickStartContainers["datanode3"]="docker run -dti \
+--name datanode3 \
+--privileged=true \
+-v /media/sf_dockerRepos:/media/sf_dockerRepos \
+${hadoopBaseNode}"
 
 quickStartContainers["RepoNode"]="docker run -dti \
 --name reponode \
@@ -151,10 +153,10 @@ function flushStatus() {
 		printf "\n\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 		for index in "${!myArr[@]}"
 		do
-			if [ "${myArr["${index}"]}" == "SUCCESS" ] &> /dev/null; then
-				printf "%32s : ${GREEN_COLOR}%s${NC}\n" "$index" "${myArr["${index}"]}"
+			if [ "${myArr["$index"]}" == "SUCCESS" ] &> /dev/null; then
+				printf "%32s : ${GREEN_COLOR}%s${NC}\n" "$index" "${myArr["$index"]}"
 			else
-				printf "%32s : ${RED_COLOR}%s${NC}\n" "$index" "${myArr["${index}"]}"
+				printf "%32s : ${RED_COLOR}%s${NC}\n" "$index" "${myArr["$index"]}"
 			fi
 		done
 		printf "\t\t ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
@@ -174,7 +176,7 @@ function startWeave() {
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
 		eval $(weave proxy-env) &> /dev/null
 		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-			{ weave launch &> /dev/null && weave launch-dns &> /dev/null && weave launch-proxy &> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
+			{ weave launch 1> /dev/null && weave launch-dns &> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
 		fi		 
 	fi
@@ -219,7 +221,7 @@ function startContainers () {
 	printf "\n\t --------------------------\n"
 	for index in "${!quickStartContainers[@]}"
 	do
-		printf "%12s %s\n" ">" "${index}"
+		printf "%12s %s\n" "-->" "${index}"
 	done
 	printf "\t --------------------------\n"
 	
@@ -237,7 +239,7 @@ function startContainers () {
 		in_array "$index" "${!quickStartContainers[@]}" && \
 		{ 
 			printf "\n\n\t\t Starting container\t\t: %s" "${index}"
-			${quickStartContainers["$index"]} &> /dev/null \
+			${quickStartContainers["$index"]} 1> /dev/null \
 			&& { printf "\n\t\t Successfully started container\t: %s" "${index}"; cStatus["$index"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED"; }
 		}
