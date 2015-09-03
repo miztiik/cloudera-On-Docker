@@ -82,6 +82,12 @@ exit
 # To start the HDFS on each node
 for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
 
+# expose the relevant ports
+# HDFS:  50010 50020 50070 50075 50090
+# Mapred: 19888
+# Yarn: 8030 8031 8032 8033 8040 8042 8088
+# Other: 49707 2122
+
 
 
 
