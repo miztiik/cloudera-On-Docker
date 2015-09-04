@@ -1,14 +1,11 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <!--
 	Ref [1] - http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Installation
 	Ref [2] - http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-Installation-Guide/cdh5ig_hdfs_cluster_deploy.html?scroll=topic_11_2_1_unique_1
 -->
-
 <!-- Put site-specific property overrides in this file. -->
-
 <configuration>
-	
 	<!-- file system properties -->
 	<property>
 		<name>fs.defaultFS</name>
@@ -18,6 +15,7 @@
 		<name>dfs.permissions</name>
 		<value>false</value>
 	</property>
+	
 	<!-- OOZIE proxy user setting -->
 	<property>
 		<name>hadoop.proxyuser.oozie.hosts</name>
@@ -25,6 +23,16 @@
 	</property>
 	<property>
 		<name>hadoop.proxyuser.oozie.groups</name>
+		<value>*</value>
+	</property>
+	
+	<!-- Proxy settings for History Server -->
+	<property>
+		<name>hadoop.proxyuser.mapred.groups</name>
+		<value>*</value>
+	</property>
+	<property>
+		<name>hadoop.proxyuser.mapred.hosts</name>
 		<value>*</value>
 	</property>
 	
