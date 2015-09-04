@@ -54,6 +54,8 @@ ${clouderaMgrNode}"
 
 quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
+-p 8020:8020 \
+-p 50070:50070 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
@@ -251,6 +253,9 @@ function startContainers () {
 }
 
 function startExitedContainers() {
+	# Check if there are any containers in the exited state and proceed. If not exit
+	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t No containers are in Exited state!\n\n"; exit; }
+	
 	printf "\n\t Choose containers to start :"
 	printf "\n\t --------------------------\n"
 	for index in "${!exitedContaiers[@]}"
@@ -284,7 +289,9 @@ function startExitedContainers() {
 	}
 
 function stopContainers () {
+	# Check if there are any containers in the "Running" state and proceed. If not exit,
 	[[ -n "${runningContainers[*]}" ]] || { printf "\n\t No containers are in running state!\n\n";exit; }
+	
 	printf "\n\t Choose containers to stop :"
 	printf "\n\t --------------------------\n"
 	for index in "${!runningContainers[@]}"
