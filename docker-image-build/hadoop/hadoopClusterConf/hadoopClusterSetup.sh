@@ -32,11 +32,6 @@ set -x
 # Other		:	49707 2122
 # ClouderaMgr:	7182	
 
-
-#################################################
-#			NAMENODE Installation				#
-#################################################
-
 # Get user confirmation that we are running from Namenode
 read -p "You should be running this from namenode, Do you want to proceed? - " -n 1 -r
 echo ""
@@ -47,167 +42,11 @@ else
 	{ printf "\\n\n\t You chose to exit"\n\n; exit; }
 fi
 
-####	Install namenode	####
-yum -y install hadoop-hdfs-namenode
-yum -y install hadoop-hdfs hadoop-client hadoop-yarn
-
-####	Zookeeper Installation	####
-
-# Install and deploy ZooKeeper.
-yum -y install zookeeper-server
-
-# Create zookeeper dir and apply permissions
-mkdir -p /var/lib/zookeeper
-chown -R zookeeper /var/lib/zookeeper/
-
-# Init zookeeper and start the service
-service zookeeper-server init
-service zookeeper-server start
-
-#### Install HISTORY / Proxy SERVER	####
-yum -y install hadoop-mapreduce-historyserver hadoop-yarn-proxyserver
-
-
-#################################################
-#			DATANODE1 Installation				#
-#################################################
-su hadoopadmin
-ssh hadoopadmin@datanode1 << "EOF"
-sudo su
-####	Install DATANODE	####
-yum -y install hadoop-hdfs-datanode hadoop-mapreduce hadoop-yarn-nodemanager
-yum -y install hadoop-hdfs hadoop-client hadoop-yarn
-
-# Install secondary namenode
-yum -y install hadoop-hdfs-secondarynamenode
-exit
-EOF
-exit
-
-#################################################
-#			DATANODE2 Installation				#
-#################################################
-su hadoopadmin
-ssh hadoopadmin@datanode2 << "EOF"
-sudo su
-####	Install DATANODE	####
-yum -y install hadoop-hdfs-datanode hadoop-mapreduce hadoop-yarn-nodemanager
-yum -y install hadoop-hdfs hadoop-client hadoop-yarn
-
-# Install resource manager
-yum -y install hadoop-yarn-resourcemanager
-exit
-EOF
-exit
-
-#################################################
-#			DATANODE3 Installation				#
-#################################################
-su hadoopadmin
-ssh hadoopadmin@datanode3 << "EOF"
-sudo su
-####	Install DATANODE	####
-yum -y install hadoop-hdfs-datanode hadoop-mapreduce hadoop-yarn-nodemanager
-yum -y install hadoop-hdfs hadoop-client hadoop-yarn
-exit
-EOF
-exit
-
-#########################################################################
-#				CONFIGURING THE CLUSTER - "NCLUSTER"					#
-#########################################################################
-
-#########################################
-#				namdenode1				#
-#########################################
-su hadoopadmin
-sudo su
-# Copying the Hadoop Configuration and Setting Alternatives
-# "ncluster" being the name of my cluster
-# "\cp" temporarily unalias the bash profile version of cp
-# Ref[1] - http://stackoverflow.com/questions/8488253/how-to-force-cp-to-overwrite-without-confirmation
-rm -rf /etc/hadoop/conf.ncluster
-cp -r /etc/hadoop/conf.empty /etc/hadoop/conf.ncluster
-\cp -rf /media/sf_dockerRepos/cloudera-On-Docker/docker-image-build/hadoop/hadoopClusterConf/conf.ncluster/* /etc/hadoop/conf.ncluster/
-
-# CDH uses the alternatives setting to determine which Hadoop configuration to use. Set alternatives to point to your custom directory
-# To display the current setting
-# alternatives --display hadoop-conf
-alternatives --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
-alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
-
-# Hadoop expects the permissions to be correct
-mkdir -p /opt/hadoop/hadoop/dfs/name
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name
-chmod 700 /opt/hadoop/hadoop/dfs/name
-chmod go-rx /opt/hadoop/hadoop/dfs/name
-
-exit
-exit
-
-# On the datanodes, create the directories to store data
-#########################################
-#				datanode1				#
-#########################################
-sudo su hadoopadmin
-ssh datanode1
-sudo su
-mkdir -p /opt/hadoop/hadoop/dfs/name/data
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name/data
-chmod 700 /opt/hadoop/hadoop/dfs/name/data
-
-# Copy the cluster configs
-scp -rp -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@namenode1:/etc/hadoop/conf.ncluster /etc/hadoop/conf.ncluster
-
-# Set the alternatives
-alternatives --verbose --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
-alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
-
-exit
-exit
-
-#########################################
-#				datanode2				#
-#########################################
-sudo su hadoopadmin
-ssh datanode2
-sudo su
-mkdir -p /opt/hadoop/hadoop/dfs/name/data
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name/data
-chmod 700 /opt/hadoop/hadoop/dfs/name/data
-
-# Copy the cluster configs
-scp -rp -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@namenode1:/etc/hadoop/conf.ncluster /etc/hadoop/conf.ncluster
-
-# Set the alternatives
-alternatives --verbose --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
-alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
-
-exit
-exit
-
-#########################################
-#				datanode3				#
-#########################################
-sudo su hadoopadmin
-ssh datanode2
-sudo su
-mkdir -p /opt/hadoop/hadoop/dfs/name/data
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name/data
-chmod 700 /opt/hadoop/hadoop/dfs/name/data
-
-# Copy the cluster configs
-scp -rp -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@namenode1:/etc/hadoop/conf.ncluster /etc/hadoop/conf.ncluster
-
-# Set the alternatives
-alternatives --verbose --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
-alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
-
-exit
-exit
+ssh -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@datanode1 
 
 # Format the namenode
 sudo -u hdfs hdfs namenode -format
+
 
 
 # To start the HDFS on each node
