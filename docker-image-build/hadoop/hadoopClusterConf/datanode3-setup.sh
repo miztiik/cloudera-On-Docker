@@ -15,13 +15,13 @@
 
 
 #################################################
-#				ROLE ASSIGNMENTS				#
+#               ROLE ASSIGNMENTS                #
 #################################################
 #	
 #	NAMENODE1	:	NAMENODE, ZOOKEEPER, HISTORY SERVER
-#	DATANODE1	:	DATANODE, SECONDARAY NAMENODE, HUE
-#	DATANODE2	:	DATANODE, RESOURCE MANAGER, HIVE
-#	DATANODE3	:	DATANODE,
+#	DATANODE1	:	DATANODE, YARN-NODE-MANAGER, SECONDARAY NAMENODE, HUE
+#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER,  RESOURCE MANAGER, HIVE
+#	DATANODE3	:	DATANODE, YARN-NODE-MANAGER, 
 #
 #################################################
 
@@ -35,28 +35,50 @@
 [[ "$(hostname -s)" = "datanode3" ]] && { printf "\n\n\t Procceding with configuring the "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
 #################################################
-#			DATANODE3 Installation				#
+#             DATANODE1 Installation            #
 #################################################
+
 ####	Install DATANODE	####
 yum -y install hadoop-hdfs-datanode hadoop-mapreduce hadoop-yarn-nodemanager
 yum -y install hadoop-hdfs hadoop-client hadoop-yarn
 
 #########################################################################
-#				CONFIGURING THE CLUSTER - "NCLUSTER"					#
+#               CONFIGURING THE CLUSTER - "NCLUSTER"                    #
 #########################################################################
 
-#########################################
-#				datanode3				#
-#########################################
-mkdir -p /opt/hadoop/hadoop/dfs/name/data
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name/data
-chmod 700 /opt/hadoop/hadoop/dfs/name/data
+#Create local directories for hadoop to storte data
+mkdir -p /data/1/dfs/dn
+chown -R hdfs:hdfs /data/1/dfs/dn
+chmod 700 /data/1/dfs/dn
 
 # Copy the cluster configs
+rm -rf /etc/hadoop/conf.ncluster
 scp -rp -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@namenode1:/etc/hadoop/conf.ncluster /etc/hadoop/conf.ncluster
 
 # Set the alternatives
 alternatives --verbose --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
 alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
 
+# To start the HDFS on each node
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x status ; done
+
+# To configure local storage directories for use by YARN on the datanodes
+mkdir -p /data/1/yarn/local
+mkdir -p /data/1/yarn/logs
+chown -R yarn:yarn /data/1/yarn/local
+chown -R yarn:yarn /data/1/yarn/logs
+chmod 755 /data/1/yarn/local /data/1/yarn/logs
+
+# On each NodeManager system (typically the same ones where DataNode service runs) - DATANODE1 DATANODE2 DATANODE3
+service hadoop-yarn-nodemanager start
+
+# Configure the Hadoop Daemons to Start at Boot Time
+chkconfig hadoop-hdfs-datanode on
+chkconfig hadoop-yarn-nodemanager on
+
 exit
+
+##################################################
+#               END OF CONFIGURATION             #
+##################################################

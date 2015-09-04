@@ -5,7 +5,7 @@
 ##	Version			:	0.2
 ##	Date   			:	04Sep2015
 ##
-##	DESCRIPTION		:	NAMENODE2 - Script to configure hadoop cluster - Should be using salt/chef in future
+##	DESCRIPTION		:	DATANODE2 - Script to configure hadoop cluster - Should be using salt/chef in future
 ##
 ##	Ref[1]			:	http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_ig_cdh5_install.html
 ##	Ref[2]			:	http://crazyadmins.com/install-multinode-cloudera-hadoop-cluster-cdh5-4-0-manually/
@@ -15,13 +15,13 @@
 
 
 #################################################
-#				ROLE ASSIGNMENTS				#
+#               ROLE ASSIGNMENTS                #
 #################################################
 #	
 #	NAMENODE1	:	NAMENODE, ZOOKEEPER, HISTORY SERVER
-#	DATANODE1	:	DATANODE, SECONDARAY NAMENODE, HUE
-#	DATANODE2	:	DATANODE, RESOURCE MANAGER, HIVE
-#	DATANODE3	:	DATANODE,
+#	DATANODE1	:	DATANODE, YARN-NODE-MANAGER, SECONDARAY NAMENODE, HUE
+#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER,  RESOURCE MANAGER, HIVE
+#	DATANODE3	:	DATANODE, YARN-NODE-MANAGER, 
 #
 #################################################
 
@@ -36,7 +36,7 @@
 
 
 #################################################
-#			DATANODE2 Installation				#
+#             DATANODE2 Installation            #
 #################################################
 
 ####	Install DATANODE	####
@@ -47,21 +47,46 @@ yum -y install hadoop-hdfs hadoop-client hadoop-yarn
 yum -y install hadoop-yarn-resourcemanager
 
 #########################################################################
-#				CONFIGURING THE CLUSTER - "NCLUSTER"					#
+#               CONFIGURING THE CLUSTER - "NCLUSTER"                    #
 #########################################################################
 
-#########################################
-#				datanode2				#
-#########################################
-mkdir -p /opt/hadoop/hadoop/dfs/name/data
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name/data
-chmod 700 /opt/hadoop/hadoop/dfs/name/data
+#Create local directories for hadoop to storte data
+mkdir -p /data/1/dfs/dn
+chown -R hdfs:hdfs /data/1/dfs/dn
+chmod 700 /data/1/dfs/dn
 
 # Copy the cluster configs
+rm -rf /etc/hadoop/conf.ncluster
 scp -rp -i /home/hadoopadmin/.ssh/id_rsa hadoopadmin@namenode1:/etc/hadoop/conf.ncluster /etc/hadoop/conf.ncluster
 
 # Set the alternatives
 alternatives --verbose --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
 alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
 
+# To start the HDFS on each node
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x status ; done
+
+# To configure local storage directories for use by YARN on the datanodes
+mkdir -p /data/1/yarn/local
+mkdir -p /data/1/yarn/logs
+chown -R yarn:yarn /data/1/yarn/local
+chown -R yarn:yarn /data/1/yarn/logs
+chmod 755 /data/1/yarn/local /data/1/yarn/logs
+
+# Start YARN and the MapReduce JobHistory Server
+# On the ResourceManager system - DATANODE2
+service hadoop-yarn-resourcemanager start
+
+# On each NodeManager system (typically the same ones where DataNode service runs) - DATANODE1 DATANODE2 DATANODE3
+service hadoop-yarn-nodemanager start
+
+# Configure the Hadoop Daemons to Start at Boot Time
+chkconfig hadoop-hdfs-datanode on
+chkconfig hadoop-yarn-nodemanager on
+chkconfig hadoop-yarn-resourcemanager on
+
 exit
+##################################################
+#               END OF CONFIGURATION             #
+##################################################

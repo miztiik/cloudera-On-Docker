@@ -2,7 +2,7 @@
 # set -x
 ##################################################################################
 ##	Author 			:	Miztiik
-##	Version			:	0.2
+##	Version			:	0.3
 ##	Date   			:	04Sep2015
 ##
 ##	DESCRIPTION		:	NAMENODE1 - Script to configure hadoop cluster - Should be using salt/chef in future
@@ -15,13 +15,13 @@
 
 
 #################################################
-#				ROLE ASSIGNMENTS				#
+#               ROLE ASSIGNMENTS                #
 #################################################
 #	
 #	NAMENODE1	:	NAMENODE, ZOOKEEPER, HISTORY SERVER
-#	DATANODE1	:	DATANODE, SECONDARAY NAMENODE, HUE
-#	DATANODE2	:	DATANODE, RESOURCE MANAGER, HIVE
-#	DATANODE3	:	DATANODE,
+#	DATANODE1	:	DATANODE, YARN-NODE-MANAGER, SECONDARAY NAMENODE, HUE
+#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER,  RESOURCE MANAGER, HIVE
+#	DATANODE3	:	DATANODE, YARN-NODE-MANAGER, 
 #
 #################################################
 
@@ -35,7 +35,7 @@
 [[ "$(hostname -s)" = "namenode1" ]] && { printf "\n\n\t Procceding with configuring the "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
 #################################################
-#			NAMENODE Installation				#
+#             NAMENODE1 Installation            #
 #################################################
 
 ####	Install namenode	####
@@ -59,12 +59,9 @@ service zookeeper-server start
 yum -y install hadoop-mapreduce-historyserver hadoop-yarn-proxyserver
 
 #########################################################################
-#				CONFIGURING THE CLUSTER - "NCLUSTER"					#
+#               CONFIGURING THE CLUSTER - "NCLUSTER"                    #
 #########################################################################
 
-#########################################
-#				namdenode1				#
-#########################################
 # Copying the Hadoop Configuration and Setting Alternatives
 # "ncluster" being the name of my cluster
 # "\cp" temporarily unalias the bash profile version of cp
@@ -79,11 +76,55 @@ cp -r /etc/hadoop/conf.empty /etc/hadoop/conf.ncluster
 alternatives --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
 alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
 
+# To start the HDFS on each node
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x status ; done
+
+#Create local directories for hadoop to storte data
 # Hadoop expects the permissions to be correct
-mkdir -p /opt/hadoop/hadoop/dfs/name
-chown -R hdfs:hdfs /opt/hadoop/hadoop/dfs/name
-chmod 700 /opt/hadoop/hadoop/dfs/name
-chmod go-rx /opt/hadoop/hadoop/dfs/name
+mkdir -p /data/1/dfs/nn
+chown -R hdfs:hdfs /data/1/dfs/nn
+chmod 700 /data/1/dfs/nn
+chmod go-rx /data/1/dfs/nn
+
+# Format the namenode
+sudo -u hdfs hdfs namenode -format
+
+# To start the HDFS on each node
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
+for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x status ; done
+
+# Hadoop needs a tmp directory with the right permissions (from any of the nodes, I do it from the namenode)
+sudo -u hdfs hadoop fs -mkdir /tmp
+sudo -u hdfs hadoop fs -chmod -R 1777 /tmp
+
+# Create history directories and set permissions
+sudo -u hdfs hadoop fs -mkdir -p /user/history
+sudo -u hdfs hadoop fs -chmod -R 1777 /user/history
+sudo -u hdfs hadoop fs -chown mapred:hadoop /user/history
+
+# Create Yarn log directories and set permissions
+sudo -u hdfs hadoop fs -mkdir -p /var/log/hadoop-yarn
+sudo -u hdfs hadoop fs -chown yarn:mapred /var/log/hadoop-yarn
+
+# Verify the HDFS File Structure
+sudo -u hdfs hadoop fs -ls -R /
+
+# To start the MapReduce JobHistory Server - NAMENODE1
+service hadoop-mapreduce-historyserver start
+
+# Create user for running mapreduce jobs - "huser"
+sudo -u hdfs hadoop fs -mkdir /user/huser
+sudo -u hdfs hadoop fs -chown huser /user/huser
+
+# Configure the Hadoop Daemons to Start at Boot Time
+chkconfig hadoop-hdfs-namenode on
+chkconfig hadoop-mapreduce-historyserver on
+chkconfig zookeeper-server on
 
 exit
+
+##################################################
+#               END OF CONFIGURATION             #
+##################################################
 
