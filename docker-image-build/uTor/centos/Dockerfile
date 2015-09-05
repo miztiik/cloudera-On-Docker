@@ -35,7 +35,7 @@ ENTRYPOINT ["/opt/utorrent/utserver" , "-settingspath" , "/opt/utorrent/" , "-co
 CMD ["/opt/utorrent/utserver.conf", "&"]
 
 
-# Connect to gui @ localhost:8080/gui
+# Connect to gui @ localhost:8085/gui
 # user name: admin
 # pass:
 
