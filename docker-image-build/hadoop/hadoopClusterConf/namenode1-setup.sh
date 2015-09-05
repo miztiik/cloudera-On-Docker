@@ -20,7 +20,7 @@
 #	
 #	NAMENODE1	:	NAMENODE, ZOOKEEPER, HISTORY SERVER
 #	DATANODE1	:	DATANODE, YARN-NODE-MANAGER, SECONDARAY NAMENODE, HUE
-#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER,  RESOURCE MANAGER, HIVE
+#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER, RESOURCE MANAGER, HIVE
 #	DATANODE3	:	DATANODE, YARN-NODE-MANAGER, 
 #
 #################################################
@@ -28,11 +28,11 @@
 # Expose the relevant ports
 # HDFS		:	8020 50010 50020 50070 50075 50090
 # Mapred	:	19888
-# Yarn		:	8030 8031 8032 8033 8040 8042 8088
+# Yarn		:	8030 8031 8032 8033 8040 8042 8088(Resource Manager)
 # Other		:	49707 2122
 # ClouderaMgr:	7182
 
-[[ "$(hostname -s)" = "namenode1" ]] && { printf "\n\n\t Procceding with configuring the "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
+[[ "$(hostname -s)" = "namenode1" ]] && { printf "\n\n\t Procceding with configuration of "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
 #################################################
 #             NAMENODE1 Installation            #
@@ -76,10 +76,6 @@ cp -r /etc/hadoop/conf.empty /etc/hadoop/conf.ncluster
 alternatives --install /etc/hadoop/conf hadoop-conf /etc/hadoop/conf.ncluster 50
 alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
 
-# To start the HDFS on each node
-for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
-for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x status ; done
-
 #Create local directories for hadoop to storte data
 # Hadoop expects the permissions to be correct
 mkdir -p /data/1/dfs/nn
@@ -112,6 +108,7 @@ sudo -u hdfs hadoop fs -ls -R /
 
 # To start the MapReduce JobHistory Server - NAMENODE1
 service hadoop-mapreduce-historyserver start
+service hadoop-mapreduce-historyserver status
 
 # Create user for running mapreduce jobs - "huser"
 sudo -u hdfs hadoop fs -mkdir /user/huser
