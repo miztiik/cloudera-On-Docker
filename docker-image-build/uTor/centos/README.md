@@ -18,7 +18,8 @@ This docker files show how to build a application that needs GUI within docker. 
 
 ### Build your image
 
-Build your image using the dockerfile `docker build --tag="local/rotnode:v1" .`
+Build your image using the dockerfile `docker build --tag="mystique/rotnodes:latest" .`
+> Note the dot in the end, to represent the current directory holds the dockerfile
 
 
 ### Run as container
@@ -52,9 +53,9 @@ docker run -dti --name rotnode \
 	            -p 28921:8085 \
 	            -v utserver.conf:/opt/utorrent/utserver.conf \
 	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	            local/rotnode:v1
+	            mystique/rotnodes:latest
 ```
 
 ##### Accessing the GUI
-Connect to gui @ localhost:8085/gui , user name: `admin` and pass: ``
+Connect to gui `http://<docker-host-ip>:28921/gui `, user name: `admin` and pass: `''`
 
