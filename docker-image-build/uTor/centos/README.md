@@ -55,4 +55,6 @@ docker run -dti --name rotnode \
 	            local/rotnode:v1
 ```
 
+##### Accessing the GUI
+Connect to gui @ localhost:8085/gui , user name: `admin` and pass: ``
 
