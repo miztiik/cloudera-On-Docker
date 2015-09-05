@@ -33,7 +33,7 @@ docker run -dti --name rotnode \
 	            -p 28920:2891 \
 	            -p 28921:8085 \
 	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	            local/rotnode:v1
+	            mystique/rotnodes:latest
 ```
 
 ##### Custom settings
