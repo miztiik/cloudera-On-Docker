@@ -32,11 +32,17 @@ RUN yum -y update && \
     yum clean all
 
 # Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
-RUN cd /etc/yum.repos.d/ && \
-    curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo && \
-    curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+COPY clouderaRepo /tmp/
+RUN cd /tmp/clouderaRepo/ && \
     yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
-    rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
+	rpm --import RPM-GPG-KEY-cloudera && \
+	ls -l /etc/yum.repos.d
+
+# RUN cd /etc/yum.repos.d/ && \
+#    curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo && \
+#    curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+#    yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
+#    rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
 
 # Lets install java in the base
 # This is bloating the docker image, until i find a elegant way to do this, will do this manually.
@@ -84,8 +90,7 @@ RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/s
 # Change the value to no; this will prevent the question when connecting with SSH to the host.
 RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 
-# Expose the private port for mapping
-EXPOSE 22
-
+# Expose the private port for mapping ( Need to trim them accordingly after checking them out)
+EXPOSE 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
 # Start the SSH daemon
 CMD [ "/usr/sbin/sshd", "-D" ]
