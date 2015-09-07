@@ -110,7 +110,6 @@ quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p
 docker info > /dev/null 2>&1 && printf "\n\t Preparing the menu...\n\n" || { printf "\n\tDocker is not running! Ensure Docker is running before running this script\n\n"; exit; }
 
 # DEFAULT_KUBECONFIG="${HOME}/.kube/config"
-
 DOCKER_IMAGES_DIR=/media/sf_dockerRepos/dockerBckUps
 
 shopt -s nullglob
@@ -143,9 +142,21 @@ in_array() {
     return 1
 }
 
+# A function to generate the menu of options to the user
+function showOptions() {
+	 declare -a optArr=("$@")
+	printf "\n\t --------------------------\n"
+	for index in "${!optArr[@]}"
+	do
+		printf "%12d : %s\n" $index "${optArr[$index]}"
+	done
+	printf "\t --------------------------\n"
+	
+	}
+
 function refreshArrStatus() {
 		# Do not use 'declare -a' again here, then it will become local array within the function.
-		exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
+		exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) 2> /dev/null | cut -d\/ -f2 2> /dev/null))	
 	}
 
 function flushStatus() {	
@@ -185,18 +196,6 @@ function startWeave() {
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
 		fi		 
 	fi
-	}
-
-function showOptions() {
-	# A function to generate the menu of options to the user
-	printf "\n\t Choose the images to load :"
-	printf "\n\t --------------------------\n"
-	for index in "${!imageList[@]}"
-	do
-		printf "%12d : %s\n" $index "${imageList[$index]}"
-	done
-	printf "\t --------------------------\n"
-	
 	}
 
 function loadContainers () {
@@ -341,12 +340,8 @@ function removeImages () {
 	
 	# Generate the menu to choose images to be removed
 	printf "\n\t Choose images to remove :"
-	printf "\n\t --------------------------\n"
-	for index in "${!loadedImages[@]}"
-	do
-		printf "%12d : %s\n" "$index" "${loadedImages[$index]}"
-	done
-	printf "\t --------------------------\n"
+	
+	showOptions "${loadedImages[@]}"
 	
 	read -p "	 Choose the images to be removed (by indexes seperated by spaces) : " -a cIndexes
 	
@@ -388,13 +383,11 @@ function stop_removeContainers() {
 	exit
 	}
 	
+
 function manageContainers() {
 	printf "\n\t Choose one of the below actions to perform :"
-	printf "\n\t -------------------------------------------\n\n"
-	for index in "${!puppetOptions[@]}"; do 
-		printf "\t\t%s : %s\n" "$index" "${puppetOptions["$index"]}"
-	done
-	printf "\n\t -------------------------------------------\n\n"
+
+	showOptions "${puppetOptions[@]}"
 
 	read -p "	 Your choice (by index seperated by spaces) : " opt
 	
@@ -426,4 +419,4 @@ function manageContainers() {
 	exit
 	}
 	
-	manageContainers
+manageContainers
