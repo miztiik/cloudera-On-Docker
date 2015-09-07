@@ -2,3 +2,6 @@
 *.bin
 *.ppk
 *.pub
+*.repo
+*.rpm
+*.txt
