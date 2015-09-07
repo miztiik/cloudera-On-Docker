@@ -9,7 +9,7 @@
 	<!-- file system properties -->
 	<property>
 		<name>fs.defaultFS</name>
-		<value>hdfs://namenode1.weave.local:8020</value>
+		<value>hdfs://namenode1:8020</value>
 	</property>
 	<property>
 		<name>dfs.permissions</name>

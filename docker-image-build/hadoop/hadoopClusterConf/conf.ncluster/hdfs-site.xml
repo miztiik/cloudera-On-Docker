@@ -38,7 +38,7 @@
 	
 	<property>
 		<name>dfs.namenode.http-address</name>
-		<value>namenode1.weave.local:50070</value>
+		<value>namenode1:50070</value>
 		<description>
 			The address and the base port on which the dfs NameNode Web UI will listen.
 		</description>

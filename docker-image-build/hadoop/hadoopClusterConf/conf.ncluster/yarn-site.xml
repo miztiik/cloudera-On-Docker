@@ -21,7 +21,7 @@
 	</property>
 	<property>
 		<name>yarn.resourcemanager.hostname</name>
-		<value>datanode2.weave.local</value>
+		<value>datanode2</value>
 	</property>
 	
 	<property>
@@ -42,7 +42,7 @@ $HADOOP_YARN_HOME/*,$HADOOP_YARN_HOME/lib/*</value>
 	<property>
     <description>Where to aggregate logs</description>
     <name>yarn.nodemanager.remote-app-log-dir</name>
-    <value>hdfs://namenode1.weave.local:8020/var/log/hadoop-yarn/apps</value>
+    <value>hdfs://namenode1:8020/var/log/hadoop-yarn/apps</value>
   </property>
 	<!--
     <property>

@@ -13,7 +13,7 @@
 	-->
 	<property>
         <name>mapred.job.tracker</name>
-		<value>namenode1.weave.local:9001</value>
+		<value>namenode1:9001</value>
 	</property>
 	
 	<!-- Enable Yarn -->
@@ -31,12 +31,12 @@
 	<!-- Configure the History Server -->
 	<property>
 		<name>mapreduce.jobhistory.address</name>
-		<value>namenode1.weave.local:10020</value>
+		<value>namenode1:10020</value>
 	</property>
 	
 	<property>
 		<name>mapreduce.jobhistory.webapp.address</name>
-		<value>namenode1.weave.local:19888</value>
+		<value>namenode1:19888</value>
 	</property>
 	
 </configuration>
