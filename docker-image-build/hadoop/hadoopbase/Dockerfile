@@ -1,7 +1,7 @@
 ##################################################################################
 ## 
-## VERSION		:	0.0.11
-## DATE			:	02Sep2015
+## VERSION		:	0.0.12
+## DATE			:	07Sep2015
 ##
 ## DESCRIPTION	:	"This image installs ssh, updates centos6.6 and basic hadoop components daemon on base centos:6.6 image" Vendor="Miztiik Corp" Version="1.0"
 ##
@@ -32,17 +32,12 @@ RUN yum -y update && \
     yum clean all
 
 # Install Cloudera Manager Repo & Cloudera Hadoop 5 packages
-COPY clouderaRepo /tmp/
-RUN cd /tmp/clouderaRepo/ && \
-    yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
-	rpm --import RPM-GPG-KEY-cloudera && \
-	ls -l /etc/yum.repos.d
-
-# RUN cd /etc/yum.repos.d/ && \
-#    curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo && \
-#    curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
-#    yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
-#    rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
+RUN cd /etc/yum.repos.d/ && \
+   curl -O http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo && \
+   curl -O http://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm && \
+   yum -y --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm && \
+   rpm --import http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera && \
+   yum clean all
 
 # Lets install java in the base
 # This is bloating the docker image, until i find a elegant way to do this, will do this manually.
@@ -59,10 +54,9 @@ RUN yum -y install hadoop-hdfs \
 	rm -rf /var/tmp/* /tmp/* /var/cache/*
 	
 # Have to really escape the special chracters will back slashes, probably should find a neater way of doing this, (laterz..)
-RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf
-	
 # Disable ip tables & Set sshd to start by default, Generates keys on the first run
-RUN chkconfig iptables off && \
+RUN sed -ri 's/cachedir=\/var\/cache\/yum\/\$basearch\/\$releasever/cachedir=\/media\/sf_dockerRepos\/dockerTmp\/yum\/\$basearch\/\$releasever/g' /etc/yum.conf && \
+    chkconfig iptables off && \
     chkconfig sshd on && \
     mkdir /var/run/sshd && \
     /etc/init.d/sshd start
@@ -80,15 +74,13 @@ RUN mkdir /home/hadoopadmin/.ssh && \
     chown -R hadoopadmin:hadoopadmin /home/hadoopadmin/.ssh
 
 # Set up SSHD config
+# Setting up password less authentication
+# Change the value to no; this will prevent the question when connecting with SSH to the host.
 RUN sed -ri 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config && \
     sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
-    sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
-
-# Setting up password less authentication
-RUN sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
-
-# Change the value to no; this will prevent the question when connecting with SSH to the host.
-RUN sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
+    sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config && \
+    sed -ri "s/#   PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config && \
+    sed -ri "s/#   StrictHostKeyChecking ask/StrictHostKeyChecking no/" /etc/ssh/ssh_config
 
 # Expose the private port for mapping ( Need to trim them accordingly after checking them out)
 EXPOSE 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
