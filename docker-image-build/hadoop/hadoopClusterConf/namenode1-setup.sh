@@ -34,6 +34,12 @@
 # HUE           :   8888 
 # ClouderaMgr	:	7182
 
+# Name Node: http://master.backtobazics.com:50070/
+# YARN Services: http://master.backtobazics.com:8088/
+# Secondary Name Node: http://master.backtobazics.com:50090/
+# Data Node 1: http://master.backtobazics.com:50075/
+# Data Node 2: http://slave1.backtobazics.com:50075/
+
 # ###### Ports for namenode1
 #      namenode1        |     External	     |        Internal     |
 # ----------------------|----------------------|---------------------|
