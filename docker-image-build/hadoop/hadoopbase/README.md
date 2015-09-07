@@ -33,6 +33,7 @@ docker run -dti --name hadoopbasenode \
                        |     namenode1        |     datanode1	     |        datanode2     |        datanode3     |
  ----------------------|----------------------|----------------------|----------------------|----------------------|
          HDFS          |     Namenode         |                      |                      |					   |
+         HDFS          |                      |  Secondary Namenode  |                      |                      |
          HDFS          |                      |     Datanode         |      Datanode        |       Datanode       |					  
          HDFS          |                      |  Yarn Node Manager   |  Yarn Node Manager   |  Yarn Node Manager   |
          HDFS          |     History Server   |                      |                      |                      |
