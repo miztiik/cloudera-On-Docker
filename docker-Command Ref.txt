@@ -26,8 +26,6 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${CID}
 docker inspect --format '{{.Name}}' ${CID}
 
 
-apache_node1
-ssh root@$IPADDR
 
 
 # To commit a change from a container to a image ( Use the -m and -a options to document the image and its author)
@@ -48,17 +46,6 @@ docker inspect <name>
 # docker build --tag "local/centos66-ssh:v2" --file="/Dockerfile"
   docker build --tag="local/hadoopbase:v1" .
   
-# To destory a container
-# To remove docker images ( In order to remove an image from the host, please make sure that there are no containers actively based on it)
-docker rmi <image-id>
-
-# To remove docker container
-docker rm <container-id>
-
-# To clone a docker image
-
-/media/sf_dockerRepos
-
 
 # To backup a image
 # docker save docker.io/weaveworks/weaveexec:1.0.2 >  weaveexec.tar
@@ -75,20 +62,6 @@ docker export <CONTAINER ID> | docker import - some-image-name:latest
 # Tagging names to images in docker
 docker tag <image> <newName>/<repoName>:<tagName>
 docker tag bc7f541e6b7e local/hadoopbase:v2
-hadoopBasev2.tar
-
-# To remove all non running containers
-docker stop $(docker ps -a -q)
-docker rm $(docker ps -q -f status=exited)
-
-# To solve device mapper errors
-service docker stop
-thin_check /var/lib/docker/devicemapper/devicemapper/metadata
-thin_check --clear-needs-check-flag /var/lib/docker/devicemapper/devicemapper/metadata
-service docker start
-
-# Count the thin pools created
-thin_dump /var/lib/docker/devicemapper/devicemapper/metadata | grep "device dev_id" | wc -l
 
 # To open a shell in a running container
 docker 	 -it <container-id> /bin/bash
@@ -99,20 +72,9 @@ du -d 2 -h /var/lib/docker/devicemapper | grep `docker inspect -f "{{.Id}}" <con
 # To remove "<none>" tagged images
 docker images | grep "<none>" | awk '{ print "docker rmi " $3 }' | bash
 
-# To see the block devices mounted in Centos 7
-lsblk
-
-# To check the dm pool
-dmsetup ls
-dmsetup status
-
-docker stop $(docker ps -aq)
-docker rm $(docker ps -aq)
-docker ps -a
-
-docker inspect --format '{{.Name}}' $(docker ps -aq)
-
-systemctl restart docker
-
-docker <watch-what-you-run> rmi $(docker images -q)
-
+# Annotated Tags in git
+# git tag -a <version-number> -m '<your-comments-here-about-this-tag-version>'
+git tag -a v2.0.2 -m 'Hadoop 4 Node cluster working configuration'
+git push origin v2.0.2
+or
+git push origin --tags
