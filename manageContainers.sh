@@ -53,6 +53,9 @@ quickStartContainers["ClouderaManagerNode"]="docker run -dti \
 ${clouderaMgrNode}"
 
 quickStartContainers["namenode1"]="docker run -dti \
+--link datanode1:datanode1 \
+--link datanode2:datanode2 \
+--link datanode3:datanode3 \
 --name namenode1 \
 -p 8020:8020 \
 -p 50070:50070 \
@@ -63,12 +66,18 @@ quickStartContainers["namenode1"]="docker run -dti \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode1"]="docker run -dti \
+--link namenode1:namenode1 \
+--link datanode2:datanode2 \
+--link datanode3:datanode3 \
 --name datanode1 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode2"]="docker run -dti \
+--link namenode1:namenode1 \
+--link datanode1:datanode1 \
+--link datanode3:datanode3 \
 --name datanode2 \
 -p 8088:8088
 -p 50090:50090 \
@@ -77,6 +86,9 @@ quickStartContainers["datanode2"]="docker run -dti \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode3"]="docker run -dti \
+--link namenode1:namenode1 \
+--link datanode1:datanode1 \
+--link datanode2:datanode2 \
 --name datanode3 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
@@ -100,7 +112,7 @@ quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-
 quickStartContainers["Scope"]="scope launch"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:80 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
-quickStartContainers["alpinetestPriv"]="docker run -dti --privileged=true --name alpinetestPriv -p 28919:8080 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
+quickStartContainers["alpinetestPriv"]="docker run -dti --privileged=true --name alpinetestPriv -p 28919:8191 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
 quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos/dockerTmp/utorrent/utserver.conf:/opt/utorrent/utserver.conf -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
 
 # Function Manipulation
@@ -119,7 +131,7 @@ shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Images" "Remove Containers" "Stop And Remove Containers" "Exit")
 declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}' | grep -v "REPOSITORY" 2> /dev/null))
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) 2> /dev/null | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) 2> /dev/null | cut -d\/ -f2 ))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) &> /dev/null | cut -d\/ -f2 &> /dev/null))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -146,7 +158,7 @@ in_array() {
 }
 
 function refreshArrStatus() {
-	exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) &> /dev/null | cut -d\/ -f2 &1> /dev/null))
+	declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) &> /dev/null | cut -d\/ -f2 &> /dev/null))
 	}
 
 function flushStatus() {	
@@ -175,8 +187,8 @@ function flushStatus() {
 function startWeave() {
 	# Currently CentOS7 doesn't like weave containers passing around ICMP, until that is resolved
 	# https://github.com/weaveworks/weave/issues/1266
-	iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2> /dev/null
-	iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2> /dev/null
+	iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 1> /dev/null
+	iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 1> /dev/null
 	
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
