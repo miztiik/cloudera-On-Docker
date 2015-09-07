@@ -1,6 +1,4 @@
-*.rpm
 *.tar
 *.bin
-*.repo
 *.ppk
 *.pub
