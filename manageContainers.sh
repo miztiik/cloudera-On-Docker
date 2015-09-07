@@ -56,7 +56,6 @@ quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
 -p 50070:50070 \
 -p 19888:19888 \
--p 8088:8088 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
@@ -69,6 +68,7 @@ ${hadoopBaseNode}"
 
 quickStartContainers["datanode2"]="docker run -dti \
 --name datanode2 \
+-p 8088:8088 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
