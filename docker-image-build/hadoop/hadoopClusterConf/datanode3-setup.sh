@@ -25,12 +25,6 @@
 #
 #################################################
 
-# Expose the relevant ports
-# HDFS		:	8020 50010 50020 50070 50075 50090
-# Mapred	:	19888
-# Yarn		:	8030 8031 8032 8033 8040 8042 8088
-# Other		:	49707 2122
-# ClouderaMgr:	7182
 
 [[ "$(hostname -s)" = "datanode3" ]] && { printf "\n\n\t Procceding with configuring the "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
