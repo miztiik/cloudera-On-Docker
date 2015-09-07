@@ -14,11 +14,6 @@ This docker files shows how to build your own base image for various cloudera co
 	* Start SSHD
 * Build the image
 
-Todo:
-
-> Open the necessary ports
-> Add the basic cluster configuration so all nodes will have the settings and same key
-> Find a way to add vm.swapiness during build, probably echo it into the file?
 
 ### Build your image
 
@@ -39,7 +34,7 @@ docker run -dti --name hadoopbasenode \
 The following ports are exposed, the list is huge. Trying to sort them into my 4 node cluster.
 > 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
 
-
+###### Ports for namenode1
      namenode1        |     External	     |        Internal     |
 ----------------------|----------------------|---------------------|
 Namenode              |      8020            |                     |
@@ -48,9 +43,8 @@ JobHistory Server     |      19888           |                     |
 JobHistory Server     |                      |          10020      |
 JobHistory Server     |                      |          10033      |
 ZooKeeper             |      2181            |                     |
-----------------------|----------------------|---------------------|
 
-----------------------|----------------------|---------------------|
+###### Ports for datanode1
     datanode1         |     External         |        Internal     |
 -------------------------------------------------------------------|
 Datanode              |      50010           |                     |
@@ -58,9 +52,8 @@ Datanode              |      50020           |                     |
 Datanode              |      50090           |                     |
 Datanode              |      50075           |                     |
 Hue                   |      8888            |                     |
-----------------------|----------------------|---------------------|
 
-----------------------|----------------------|---------------------|
+###### Ports for datanode2
      datanode2        |     External	     |        Internal     |
 -------------------------------------------------------------------|
 Datanode              |      50010           |                     |
@@ -72,10 +65,12 @@ ResourceManager       |      8031            |                     |
 ResourceManager       |      8032            |                     |
 ResourceManager       |      8033            |                     |
 ResourceManager       |      8888            |                     |
-----------------------|----------------------|---------------------|
+
 
 ##### To Do
 - [x] Expose the necessary ports ( there is a whole lot of them ).
-- [] Probably can add zookeeper client also.
+- [ ] Probably can add zookeeper client also.
+- [ ] Add the basic cluster configuration so all nodes will have the settings and same key
+- [ ] Find a way to add vm.swapiness during build, probably echo it into the file?
 
 
