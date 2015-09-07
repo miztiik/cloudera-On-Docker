@@ -42,10 +42,12 @@ docker run -dti --name hadoopbasenode \
                        |                      |                      |        Hive          |                      |
 					   
 #### Accessing the cluster through GUI
-Name Node: `http://<Namenode-hostname>:50070/`
-YARN Services: `http://<Yarn-Node-Manager-hostname>:8088/`
-Secondary Name Node: `http://<Secondary-Namenode-hostname>:50090/`
-Data Node 1: `http://<Datanode[*]-hostname>:50075/`
+* Name Node: `http://<Namenode-hostname>:50070/`
+* YARN Services: `http://<Yarn-Node-Manager-hostname>:8088/`
+* Secondary Name Node: `http://<Secondary-Namenode-hostname>:50090/`
+* Data Node(s): `http://<Datanode[*]-hostname>:50075/`
+* Hue:
+
 
 ### Testing your hadoop cluster
 ```
