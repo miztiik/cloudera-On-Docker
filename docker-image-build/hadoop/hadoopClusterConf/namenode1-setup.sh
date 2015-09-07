@@ -14,6 +14,7 @@
 ##################################################################################
 
 
+
 #################################################
 #               ROLE ASSIGNMENTS                #
 #################################################
@@ -26,13 +27,50 @@
 #################################################
 
 # Expose the relevant ports
-# HDFS		:	8020 50010 50020 50070 50075 50090
-# Mapred	:	19888
-# Yarn		:	8030 8031 8032 8033 8040 8042 8088(Resource Manager)
-# Other		:	49707 2122
-# ClouderaMgr:	7182
+# HDFS			:	8020 50010 50020 50070 50075 50090
+# Mapred		:	19888
+# Yarn			:	8030 8031 8032 8033 8040 8042 8088
+# Other			:   49707 2122
+# HUE           :   8888 
+# ClouderaMgr	:	7182
 
-[[ "$(hostname -s)" = "namenode1" ]] && { printf "\n\n\t Procceding with configuration of "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
+# -------------------------------------------------------------------|
+#      namenode1        |     External	       |        Internal     |
+# -------------------------------------------------------------------|
+# Namenode              |      8020            |                     |
+# Namenode              |      50070           |                     |
+# JobHistory Server     |      19888           |                     |
+# JobHistory Server     |                      |          10020      |
+# JobHistory Server     |                      |          10033      |
+# ZooKeeper             |      2181            |                     |
+# -------------------------------------------------------------------|
+
+# -------------------------------------------------------------------|
+#      datanode1        |     External	       |        Internal     |
+# -------------------------------------------------------------------|
+# Datanode              |      50010           |                     |
+# Datanode              |      50020           |                     |
+# Datanode              |      50090           |                     |
+# Datanode              |      50075           |                     |
+# Hue                   |      8888            |                     |
+# -------------------------------------------------------------------|
+
+# -------------------------------------------------------------------|
+#      datanode2        |     External	       |        Internal     |
+# -------------------------------------------------------------------|
+# Datanode              |      50010           |                     |
+# Datanode              |      50020           |                     |
+# Datanode              |      50090           |                     |
+# Datanode              |      50075           |                     |
+# ResourceManager       |      8030            |                     |
+# ResourceManager       |      8031            |                     |
+# ResourceManager       |      8032            |                     |
+# ResourceManager       |      8033            |                     |
+# ResourceManager       |      8888            |                     |
+# -------------------------------------------------------------------|
+
+
+[[ "$(hostname -s)" = "namenode1" ]] && { printf "\n\n\t Procceding with configuring the "$(hostname -s)" ...\n\n"; } || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
 #################################################
 #             NAMENODE1 Installation            #
