@@ -54,7 +54,6 @@ ${clouderaMgrNode}"
 
 quickStartContainers["namenode1"]="docker run -dti \
 --name namenode1 \
--p 8020:8020 \
 -p 50070:50070 \
 -p 19888:19888 \
 -p 8088:8088 \
@@ -63,28 +62,20 @@ quickStartContainers["namenode1"]="docker run -dti \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode1"]="docker run -dti \
---link namenode1:namenode1 \
---link datanode2:datanode2 \
---link datanode3:datanode3 \
 --name datanode1 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode2"]="docker run -dti \
---link namenode1:namenode1 \
---link datanode1:datanode1 \
---link datanode3:datanode3 \
 --name datanode2 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
 
 quickStartContainers["datanode3"]="docker run -dti \
---link namenode1:namenode1 \
---link datanode1:datanode1 \
---link datanode2:datanode2 \
 --name datanode3 \
+-p 50075:50075 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
@@ -126,7 +117,7 @@ shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Images" "Remove Containers" "Stop And Remove Containers" "Exit")
 declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}' | grep -v "REPOSITORY" 2> /dev/null))
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) 2> /dev/null | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) 2> /dev/null | cut -d\/ -f2 2> /dev/null))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -196,6 +187,17 @@ function startWeave() {
 	fi
 	}
 
+function showOptions() {
+	# A function to generate the menu of options to the user
+	printf "\n\t Choose the images to load :"
+	printf "\n\t --------------------------\n"
+	for index in "${!imageList[@]}"
+	do
+		printf "%12d : %s\n" $index "${imageList[$index]}"
+	done
+	printf "\t --------------------------\n"
+	
+	}
 
 function loadContainers () {
 	[[ -n "${imageList[*]}" ]] || { printf "\n\t There are no images to load!\n\n";exit; }
