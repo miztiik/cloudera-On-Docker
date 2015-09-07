@@ -77,6 +77,7 @@ declare -a clusterNodeHostNames=("namenode1" "datanode1" "datanode2" "datanode3"
 #
 #################################################
 
+shopt -s nullglob
 # An associative array to hold the roles information
 declare -A roleAssignments
 roleAssignments["NN"]="namenode1"
@@ -110,6 +111,7 @@ in_array() {
     return 1
 }
 
+# Check if the cluster nodes are among the ones for which this script is to be used for.
 in_array "$(hostname -s)" "${clusterNodeHostNames[@]}" || { printf "\n\n\t You are on the wrong node - "$(hostname -s)"\n\n"; exit;}
 
 
@@ -303,7 +305,7 @@ alternatives --set hadoop-conf /etc/hadoop/conf.ncluster
 for x in `cd /etc/init.d ; ls hadoop-hdfs-*` ; do sudo service $x start ; done
 for x in `cd /etc/init.d ; ls hadoop-yarn-*` ; do sudo service $x start ; done
 
-for x in `cd /etc/init.d ; ls hadoop-*` ; do sudo service $x status ; done
+for x in $(cd /etc/init.d ; ls hadoop-*) ; do sudo service $x status ; done
 
 # To configure local storage directories for use by YARN on the datanodes
 mkdir -p /data/1/yarn/local
