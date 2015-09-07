@@ -27,7 +27,7 @@ NC='\033[0m'					# No Color
 declare -A quickStartContainers
 
 
-hadoopBaseNode="mystique/hadoopbase:latest"
+hadoopBaseNode="mystique/hadoopbase:v2"
 clouderaMgrNode="mystique/clouderamgrnode:latest"
 
 # Google readme recommends cAdvisor to be run in privileged mode to monitor docker container in RHEL
@@ -53,9 +53,6 @@ quickStartContainers["ClouderaManagerNode"]="docker run -dti \
 ${clouderaMgrNode}"
 
 quickStartContainers["namenode1"]="docker run -dti \
---link datanode1:datanode1 \
---link datanode2:datanode2 \
---link datanode3:datanode3 \
 --name namenode1 \
 -p 8020:8020 \
 -p 50070:50070 \
@@ -158,7 +155,8 @@ in_array() {
 }
 
 function refreshArrStatus() {
-	declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
+		# Do not use 'declare -a' again here, then it will become local array within the function.
+		exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
 	}
 
 function flushStatus() {	
@@ -360,7 +358,7 @@ function removeImages () {
 		# Check if the chosen input is from the displayed input array
 		in_array "$index" "${!loadedImages[@]}" && \
 		{ 
-			printf "\n\n\t\t Attempting to stop container\t: %s" "${loadedImages["$index"]}"
+			printf "\n\n\t\t Attempting to remove image\t: %s" "${loadedImages["$index"]}"
 			docker rmi "${loadedImages["$index"]}" 1> /dev/null \
 			&& { printf "\n\t\t COMPLETED removing image\t: %s\n" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to remove image\t\t: %s" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="FAILED"; }
