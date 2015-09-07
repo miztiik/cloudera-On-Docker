@@ -29,6 +29,25 @@ docker run -dti --name hadoopbasenode \
 				mystique:hadoopbasenode:latest
 
 ```
+### ROLE ASSIGNMENTS
+                       |     namenode1        |     datanode1	     |        datanode2     |        datanode3     |
+ ----------------------|----------------------|----------------------|----------------------|----------------------|
+         HDFS          |     Namenode         |                      |                      |					   |
+         HDFS          |                      |     Datanode         |      Datanode        |       Datanode       |					  
+         HDFS          |                      |  Yarn Node Manager   |  Yarn Node Manager   |  Yarn Node Manager   |
+         HDFS          |     History Server   |                      |                      |                      |
+                       |     ZooKeeper        |                      |                      |                      |
+                       |                      |        Hue           |                      |                      |
+                       |                      |                      |        Hive          |                      |
+
+
+
+#	NAMENODE1	:	NAMENODE, ZOOKEEPER, HISTORY SERVER
+#	DATANODE1	:	DATANODE, YARN-NODE-MANAGER, SECONDARAY NAMENODE, HUE
+#	DATANODE2	:	DATANODE, YARN-NODE-MANAGER, RESOURCE MANAGER, HIVE
+#	DATANODE3	:	DATANODE, YARN-NODE-MANAGER, 
+#
+
 
 ### Exposed Ports
 The following ports are exposed, [the list is huge](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_ig_ports_cdh5.html). Trying to sort them into my 4 node cluster.
