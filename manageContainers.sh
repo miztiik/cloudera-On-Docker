@@ -131,7 +131,7 @@ shopt -s nullglob
 declare -a puppetOptions=("Load Containers" "Start Containers" "Restart Exited Containers" "Stop Containers" "Remove Images" "Remove Containers" "Stop And Remove Containers" "Exit")
 declare -a loadedImages=($(docker images | awk -F ' ' '{print $1":"$2}' | grep -v "REPOSITORY" 2> /dev/null))
 declare -a runningContainers=($(docker inspect --format '{{.Name}}' $(docker ps -q) 2> /dev/null | cut -d\/ -f2))
-declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) &> /dev/null | cut -d\/ -f2 &> /dev/null))
+declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
 
 declare -a imageList=( "$DOCKER_IMAGES_DIR"/*.tar )
 # Trims the prefixes and give only file names
@@ -158,7 +158,7 @@ in_array() {
 }
 
 function refreshArrStatus() {
-	declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) &> /dev/null | cut -d\/ -f2 &> /dev/null))
+	declare -a exitedContaiers=($(docker inspect --format '{{.Name}}' $(docker ps -q -f status=exited) | cut -d\/ -f2 2> /dev/null))
 	}
 
 function flushStatus() {	
@@ -187,14 +187,14 @@ function flushStatus() {
 function startWeave() {
 	# Currently CentOS7 doesn't like weave containers passing around ICMP, until that is resolved
 	# https://github.com/weaveworks/weave/issues/1266
-	iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 1> /dev/null
-	iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 1> /dev/null
+	iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited &> /dev/null
+	iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited &> /dev/null
 	
 	# Lets check if weave environment variable is set if not set it
-	if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-		eval $(weave proxy-env) &> /dev/null
-		if [[ -z "$DOCKER_HOST" ]] 2>&1 > /dev/null; then
-			{ weave launch 1> /dev/null && weave launch-dns &> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
+	if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
+		eval $(weave proxy-env) 1> /dev/null
+		if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
+			{ weave launch 1> /dev/null && weave launch-dns 1> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
 		fi		 
 	fi
@@ -223,7 +223,7 @@ function loadContainers () {
 		in_array "$index" "${!imageList[@]}" && \
 		{
 			printf "\n\n\t\t Starting to load image\t\t: %s" "${imageList["$index"]}"
-			docker load < "${imageList["$index"]}".tar &> /dev/null \
+			docker load < "${imageList["$index"]}".tar 1> /dev/null \
 			&& { printf "\n\t\t COMPLETED loading image\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to load image\t\t: %s" "${imageList["$index"]}"; cStatus["${imageList["$index"]}"]="FAILED"; }
 		}
@@ -293,7 +293,7 @@ function startExitedContainers() {
 		in_array "$index" "${!runningContainers[@]}" && \
 		{ 
 			printf "\n\n\t\t Starting container\t\t: %s" "${exitedContaiers["$index"]}"
-			docker start "${exitedContaiers["$index"]}" &> /dev/null \
+			docker start "${exitedContaiers["$index"]}" 1> /dev/null \
 			&& { printf "\n\t\t Successfully started container\t: %s" "${exitedContaiers["$index"]}"; cStatus["${exitedContaiers["$index"]}"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to start container\t: %s" "${exitedContaiers["$index"]}"; cStatus["${exitedContaiers["$index"]}"]="FAILED"; }
 		}
@@ -327,7 +327,7 @@ function stopContainers () {
 		in_array "$index" "${!runningContainers[@]}" && \
 		{ 
 			printf "\n\n\t\t Attempting to stop container\t: %s" "${runningContainers["$index"]}"
-			docker stop "${runningContainers["$index"]}" &> /dev/null \
+			docker stop "${runningContainers["$index"]}" 1> /dev/null \
 			&& { printf "\n\t\t Stopped container\t\t: %s\n" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to stop container\t: %s" "${runningContainers["$index"]}"; cStatus["${runningContainers["$index"]}"]="FAILED"; }
 		}
@@ -361,7 +361,7 @@ function removeImages () {
 		in_array "$index" "${!loadedImages[@]}" && \
 		{ 
 			printf "\n\n\t\t Attempting to stop container\t: %s" "${loadedImages["$index"]}"
-			docker rmi "${loadedImages["$index"]}" &> /dev/null \
+			docker rmi "${loadedImages["$index"]}" 1> /dev/null \
 			&& { printf "\n\t\t COMPLETED removing image\t: %s\n" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="SUCCESS"; } \
 			|| { printf "\n\t\t FAILED to remove image\t\t: %s" "${loadedImages["$index"]}"; cStatus["${loadedImages["$index"]}"]="FAILED"; }
 		}
@@ -376,7 +376,7 @@ function removeContainers() {
 	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
 		if [[ -n $(docker ps -a -q -f status=exited) ]] &> /dev/null; then
-			docker rm -v $(docker ps -a -q -f status=exited) &> /dev/null && \
+			docker rm -v $(docker ps -a -q -f status=exited) 1> /dev/null && \
 			{ printf "\n\t REMOVED all exited containers\n\n"; exit; } || \
 			{ printf "\n\t Not able to remove containers\n\n"; exit; }
 		fi
