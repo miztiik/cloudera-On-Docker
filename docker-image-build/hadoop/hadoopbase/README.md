@@ -31,7 +31,7 @@ docker run -dti --name hadoopbasenode \
 ```
 
 ### Exposed Ports
-The following ports are exposed, the list is huge. Trying to sort them into my 4 node cluster.
+The following ports are exposed, [the list is huge](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_ig_ports_cdh5.html). Trying to sort them into my 4 node cluster.
 > 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
 
 ###### Ports for namenode1
@@ -66,6 +66,13 @@ ResourceManager       |      8032            |                     |
 ResourceManager       |      8033            |                     |
 ResourceManager       |      8888            |                     |
 
+###### Ports for datanode3
+     datanode2        |     External	     |        Internal     |
+----------------------|----------------------|---------------------|
+Datanode              |      50010           |                     |
+Datanode              |      50020           |                     |
+Datanode              |      50090           |                     |
+Datanode              |      50075           |                     |
 
 ##### To Do
 - [x] Expose the necessary ports ( there is a whole lot of them ).
