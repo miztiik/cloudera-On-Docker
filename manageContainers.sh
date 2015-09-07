@@ -76,8 +76,6 @@ quickStartContainers["datanode2"]="docker run -dti \
 --link datanode1:datanode1 \
 --link datanode3:datanode3 \
 --name datanode2 \
--p 8088:8088
--p 50090:50090 \
 --privileged=true \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 ${hadoopBaseNode}"
