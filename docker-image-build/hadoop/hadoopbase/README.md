@@ -40,8 +40,20 @@ docker run -dti --name hadoopbasenode \
                        |     ZooKeeper        |                      |                      |                      |
                        |                      |        Hue           |                      |                      |
                        |                      |                      |        Hive          |                      |
+					   
+#### Accessing the cluster through GUI
+Name Node: `http://<Namenode-hostname>:50070/`
+YARN Services: `http://<Yarn-Node-Manager-hostname>:8088/`
+Secondary Name Node: `http://<Secondary-Namenode-hostname>:50090/`
+Data Node 1: `http://<Datanode[*]-hostname>:50075/`
 
-### Exposed Ports
+### Testing your hadoop cluster
+```
+su - hdfs
+hadoop jar /usr/lib/hadoop-0.20-mapreduce/hadoop-examples.jar randomwriter out
+```
+
+#### Exposed Ports
 The following ports are exposed, [the list is huge](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_ig_ports_cdh5.html). Trying to sort them into my 4 node cluster.
 > 22 2181 7180 7182 50010 50075 50020 8020 50070 50090 8032 8030 8031 8033 8088 8888 8040 8042 8041 10020 19888 41370 38319 10000 21050 25000 25010 25020 18080 18081 7077 7078 9000 9001
 
