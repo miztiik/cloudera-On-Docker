@@ -202,12 +202,8 @@ function loadContainers () {
 	[[ -n "${imageList[*]}" ]] || { printf "\n\t There are no images to load!\n\n";exit; }
 	cd "$DOCKER_IMAGES_DIR"
 	printf "\n\t Choose the images to load :"
-	printf "\n\t --------------------------\n"
-	for index in "${!imageList[@]}"
-	do
-		printf "%12d : %s\n" $index "${imageList[$index]}"
-	done
-	printf "\t --------------------------\n"
+	
+	showOptions "${imageList[@]}"
 	
 	declare -a cIndexes
 	declare -A cStatus
@@ -270,12 +266,8 @@ function startExitedContainers() {
 	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t No containers are in Exited state!\n\n"; exit; }
 	
 	printf "\n\t Choose containers to start :"
-	printf "\n\t --------------------------\n"
-	for index in "${!exitedContaiers[@]}"
-	do
-		printf "%12d : %s\n" $index "${exitedContaiers["$index"]}"
-	done
-	printf "\t --------------------------\n"
+	
+	showOptions "${exitedContaiers[@]}"
 	
 	read -p "	Choose the containers to be started (by indexes seperated by spaces) : " -a cIndexes
 	
@@ -306,12 +298,8 @@ function stopContainers () {
 	[[ -n "${runningContainers[*]}" ]] || { printf "\n\t No containers are in running state!\n\n";exit; }
 	
 	printf "\n\t Choose containers to stop :"
-	printf "\n\t --------------------------\n"
-	for index in "${!runningContainers[@]}"
-	do
-		printf "%12d : %s\n" "$index" "${runningContainers[$index]}"
-	done
-	printf "\t --------------------------\n"
+	
+	showOptions "${runningContainers[@]}"
 	
 	read -p "	 Choose the containers to be stopped (by indexes seperated by spaces) : " -a cIndexes
 	
