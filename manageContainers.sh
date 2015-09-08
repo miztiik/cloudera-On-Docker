@@ -2,8 +2,8 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:	2.0.6
-## DATE			:	02Sep2015
+## VERSION      :   2.0.7
+## DATE	        :   08Sep2015
 ##	
 ## USAGE		:	This script will help to start, stop and remove containers. Poor mans version of kitematic
 ## Ref[1]		:	http://wiki.bash-hackers.org/syntax/arrays
@@ -13,9 +13,7 @@
 # $0 is the name of the script itself.
 args=("$@")
 
-
 # home="$( cd "$( dirname "$0" )" && pwd )"
-
 
 # Set the colors to be used
 RED_COLOR='\e[0;31m'			# Red
@@ -94,12 +92,13 @@ quickStartContainers["webnode1"]="docker run -dti \
 -v /media/sf_dockerRepos:/media/sf_dockerRepos \
 httpd:latest /bin/bash"
 
-quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
-quickStartContainers["Scope"]="scope launch"
-quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:80 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
 quickStartContainers["alpinetestPriv"]="docker run -dti --privileged=true --name alpinetestPriv -p 28919:8191 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
+quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
+quickStartContainers["MongoDB"]="docker run --name nmongo -v /media/sf_dockerRepos/dockerTmp/dbTmp:/media/sf_dockerRepos/dockerTmp/dbTmp -d mongo:latest"
 quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos/dockerTmp/utorrent/utserver.conf:/opt/utorrent/utserver.conf -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
+quickStartContainers["Scope"]="scope launch"
+quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
 
 # Function Manipulation
 #	${arr[*]}         # All of the items in the array
@@ -144,7 +143,7 @@ in_array() {
 
 # A function to generate the menu of options to the user
 function showOptions() {
-	 declare -a optArr=("$@")
+	declare -a optArr=("$@")
 	printf "\n\t --------------------------\n"
 	for index in "${!optArr[@]}"
 	do
