@@ -2,10 +2,10 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION      :   2.0.7
-## DATE	        :   08Sep2015
+## VERSION      :   2.0.8
+## DATE	        :   09Sep2015
 ##	
-## USAGE		:	This script will help to start, stop and remove containers. Poor mans version of kitematic
+## DESCRIPTION  :   This script will help to start, stop and remove containers. Poor mans version of kitematic
 ## Ref[1]		:	http://wiki.bash-hackers.org/syntax/arrays
 ## Ref[2]		:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 ##################################################################################
@@ -191,7 +191,9 @@ function startWeave() {
 	if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
 		eval $(weave proxy-env) 1> /dev/null
 		if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
-			{ weave launch 1> /dev/null && weave launch-dns 1> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && printf "\n\n\t Successfully started weave\n\n"; return 0; } \
+			{ weave launch 1> /dev/null && weave launch-dns 1> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && \
+				printf "\n\n\t Successfully started weave\n\n"; return 0; 
+			} \
 			|| { printf "\n\t Not able to start weave, Starting without weave\n\n"; return 1; }
 		fi		 
 	fi
@@ -352,6 +354,7 @@ function removeImages () {
 	exit
 }
 
+# The following function removes any containers that are in exited state
 function removeContainers() {
 	[[ -n "${exitedContaiers[*]}" ]] || { printf "\n\t There are no containers in exited state!\n\n";exit; }
 		#Check if any containers are running(-n for not null) if not exit with a message saying no containers are running
