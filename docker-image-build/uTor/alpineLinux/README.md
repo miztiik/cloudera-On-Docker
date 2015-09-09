@@ -1,11 +1,12 @@
-# Setting up GUI Apps in Docker
+# Container to run uTorrent in Alpine Linux
 
-This docker files show how to build a application that needs GUI within docker. Inspired by this [article](http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/).
+This docker files show how to build a super lightweight docker container to run uTorrent in Alipine Linux with mounted volumes for data storage.
 
 ## Docker instructions
-* Centos 6.6 - will be used as the based
-* Install the necessary packages like wget,libssl, unzip etc
-* Install and setup uTorrent
+* Use the latest [Alpine Linux](https://hub.docker.com/_/alpine/) image
+* Install the necessary packages like curl wget tar libgcc openssl etc
+* Install glibc (_Alpine Linux uses musl_) needed to run utServer
+* Install and setup utServer (optional, you can have the utServer mounted as external volume)
 * Setup the file with additional configuration
 	* All custom configuration goes into this file
 		* Download directory
@@ -18,7 +19,7 @@ This docker files show how to build a application that needs GUI within docker. 
 
 ### Build your image
 
-Build your image using the dockerfile `docker build --tag="mystique/rotnodes:latest" .`
+Build your image using the dockerfile `docker build --tag="mystique/alpine-rot:latest" .`
 > Note the dot in the end, to represent the current directory holds the dockerfile
 
 
@@ -33,7 +34,7 @@ docker run -dti --name rotnode \
 	            -p 28920:2891 \
 	            -p 28921:8085 \
 	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	            mystique/rotnodes:latest
+	            mystique/alpine-rot:latest
 ```
 
 ##### Custom settings
@@ -53,7 +54,7 @@ docker run -dti --name rotnode \
 	            -p 28921:8085 \
 	            -v utserver.conf:/opt/utorrent/utserver.conf \
 	            -v <Remote-torrent-directory>:<torrent-directory-inContainer> \ 
-	            mystique/rotnodes:latest
+	            mystique/alpine-rot:latest
 ```
 
 ##### Accessing the GUI
