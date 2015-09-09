@@ -96,7 +96,7 @@ quickStartContainers["alpinetest"]="docker run -dti --name alpinetest -p 28918:8
 quickStartContainers["alpinetestPriv"]="docker run -dti --privileged=true --name alpinetestPriv -p 28919:8191 -v /media/sf_dockerRepos:/media/sf_dockerRepos alpine:latest /bin/sh"
 quickStartContainers["Busybox"]="docker run -dti busybox /bin/sh"
 quickStartContainers["MongoDB"]="docker run --name nmongo -v /media/sf_dockerRepos/dockerTmp/dbTmp:/media/sf_dockerRepos/dockerTmp/dbTmp -d mongo:latest"
-quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos/dockerTmp/utorrent/utserver.conf:/opt/utorrent/utserver.conf -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
+quickStartContainers["rotNode"]="docker run -dti --name rotNode -p 28920:2891 -p 28921:8085 -v /media/sf_dockerRepos/dockerTmp/utorrent/:/opt/utorrent/ -v /media/sf_dockerRepos:/media/sf_dockerRepos mystique/rotnodes:v2"
 quickStartContainers["Scope"]="scope launch"
 quickStartContainers["Weave"]="weave launch && weave launch-dns && weave launch-proxy"
 
