@@ -1,2 +1,6 @@
 *.pl
 *.sh
+.git
+LICENSE
+*.md
+*.txt
