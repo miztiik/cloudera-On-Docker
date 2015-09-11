@@ -251,9 +251,9 @@ function startContainers () {
 		in_array "$index" "${!quickStartContainers[@]}" && \
 		{ 
 			printf "\n\n\t\t Starting container\t\t: %s" "${index}"
-			${quickStartContainers["$index"]} 1> /dev/null \
+			errMsg=$(${quickStartContainers["$index"]} 2>&1> /dev/null) \
 			&& { printf "\n\t\t Successfully started container\t: %s" "${index}"; cStatus["$index"]="SUCCESS"; } \
-			|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED"; }
+			|| { printf "\n\t\t FAILED to start container\t: %s" "${index}"; cStatus["$index"]="FAILED-${errMsg}"; }
 		}
 	done
 	
