@@ -10,9 +10,6 @@
 ## Ref[2]		:	https://www.gnu.org/s/gawk/manual/html_node/Printf-Examples.html
 ##################################################################################
 
-# $0 is the name of the script itself.
-args=("$@")
-
 # home="$( cd "$( dirname "$0" )" && pwd )"
 
 # Set the colors to be used
