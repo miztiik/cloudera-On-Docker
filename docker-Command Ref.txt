@@ -1,17 +1,9 @@
 ##################################################################################
 ##	Author 		: Miztiik
-##	Date   		: 07Aug2015
-##	Version		: 0.3
+##	Date   		: 15Sep2015
+##	Version		: 0.4
 ##	Description	: Some of the commands to help me quickly execute docker commands
 ##################################################################################
-
-# Some docker commands
-
-# To List Containers
-sudo docker ps –a
-
-# To stop a container
-docker stop <container-id>
 
 # Starting a container
 # docker run --name <custom-name-of-the-container-to-identify> <name-of-the-container-to-boot> <shell-to-startwith>
@@ -78,3 +70,5 @@ git tag -a v2.0.2 -m 'Hadoop 4 Node cluster working configuration'
 git push origin v2.0.2
 or
 git push origin --tags
+
+# git how to create a branch
