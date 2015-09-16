@@ -17,22 +17,19 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${CID}
 
 docker inspect --format '{{.Name}}' ${CID}
 
-
-
-
 # To commit a change from a container to a image ( Use the -m and -a options to document the image and its author)
 # docker commit -m <desc-of-image> -a <author> <container id> <username>/<imagename>:<version>
 docker commit -m "centosUpdated + java + ssh" -a "miztiik" 195d6216b120 local/centos66:latest
 
 docker commit -m "Hadoopbase-ssh-yum-cache-on" -a "miztiik" 4fd1a6fb3948 local/hadoopbase:v2
 
-docker commit -m "hadoop-Cloudera-Manager-Base" -a "miztiik" 9528fe20c924 local/hadoop_cloudera_mgr_base:v1
-
-docker commit -m "ClouderaMgrBase-repoHTTPD-2891 port" -a "miztiik" f179c5c863da local/hadoopmgrnode:v2
 
 
 # To find out information about a container
 docker inspect <name>
+
+# To view the logs from a container
+docker logs <containerName>
 
 # To build a container from a image through a script
 # docker build --tag "local/centos66-ssh:v2" --file="/Dockerfile"
