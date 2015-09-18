@@ -1,7 +1,7 @@
 ##################################################################################
 ##	Author 		: Miztiik
-##	Date   		: 15Sep2015
-##	Version		: 0.4
+##	Date   		: 17Sep2015
+##	Version		: 0.5
 ##	Description	: Some of the commands to help me quickly execute docker commands
 ##################################################################################
 
@@ -60,6 +60,8 @@ du -d 2 -h /var/lib/docker/devicemapper | grep `docker inspect -f "{{.Id}}" <con
 
 # To remove "<none>" tagged images
 docker images | grep "<none>" | awk '{ print "docker rmi " $3 }' | bash
+
+# Help commands for Git
 
 # Annotated Tags in git
 # git tag -a <version-number> -m '<your-comments-here-about-this-tag-version>'
