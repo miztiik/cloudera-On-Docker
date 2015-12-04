@@ -186,7 +186,7 @@ function startWeave() {
 	
 	# Lets check if weave environment variable is set if not set it
 	if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
-		eval $(weave proxy-env) 1> /dev/null
+		eval $(weave env) 1> /dev/null
 		if [[ -z "$DOCKER_HOST" ]] &> /dev/null; then
 			{ weave launch 1> /dev/null && weave launch-dns 1> /dev/null && weave launch-proxy 1> /dev/null && eval $(weave proxy-env) &> /dev/null && \
 				printf "\n\n\t Successfully started weave\n\n"; return 0; 
