@@ -2,13 +2,13 @@
 # set -x
 ##################################################################################
 ## 
-## VERSION		:0.0.3
-## DATE			:24Aug2015
+## VERSION      :0.0.5
+## DATE         :04Dec2015
 ##
-## USAGE		:This script enable docker 1.8.1 to use etc/sysconfig/ for additional options as they are not given by default
-## Ref[1]		:https://docs.docker.com/articles/configuring/
-## Ref[2]		:https://docs.docker.com/articles/systemd/
-## Ref[2]		:https://docs.docker.com/reference/commandline/daemon/
+## USAGE        :This script will install docker & enable docker to use etc/sysconfig/ for additional options as they are not given by default
+## Ref[1]       :https://docs.docker.com/articles/configuring/
+## Ref[2]       :https://docs.docker.com/articles/systemd/
+## Ref[2]       :https://docs.docker.com/reference/commandline/daemon/
 ##################################################################################
 
 # Install the latest version of docker
